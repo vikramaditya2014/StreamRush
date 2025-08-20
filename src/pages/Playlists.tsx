@@ -17,14 +17,6 @@ const Playlists: React.FC = () => {
   const { currentUser } = useAuth();
   const { getUserPlaylists, createPlaylist } = useVideo();
 
-  useEffect(() => {
-    if (currentUser) {
-      loadPlaylists();
-    } else {
-      setLoading(false);
-    }
-  }, [currentUser, loadPlaylists]);
-
   const loadPlaylists = useCallback(async () => {
     try {
       const userPlaylists = await getUserPlaylists();
@@ -35,6 +27,14 @@ const Playlists: React.FC = () => {
       setLoading(false);
     }
   }, [getUserPlaylists]);
+
+  useEffect(() => {
+    if (currentUser) {
+      loadPlaylists();
+    } else {
+      setLoading(false);
+    }
+  }, [currentUser, loadPlaylists]);
 
   const handleCreatePlaylist = async (e: React.FormEvent) => {
     e.preventDefault();

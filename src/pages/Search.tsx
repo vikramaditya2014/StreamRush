@@ -19,12 +19,6 @@ const Search: React.FC = () => {
   const { searchVideos } = useVideo();
   const query = searchParams.get('q') || '';
 
-  useEffect(() => {
-    if (query) {
-      performSearch();
-    }
-  }, [query, filters, performSearch]);
-
   const performSearch = useCallback(async () => {
     setLoading(true);
     try {
@@ -36,6 +30,12 @@ const Search: React.FC = () => {
       setLoading(false);
     }
   }, [query, filters, searchVideos]);
+
+  useEffect(() => {
+    if (query) {
+      performSearch();
+    }
+  }, [query, filters, performSearch]);
 
   const handleFilterChange = (key: keyof SearchFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));

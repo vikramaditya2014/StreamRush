@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Menu, Video, Bell, User, LogOut, Play } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import NotificationDropdown from './NotificationDropdown';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -82,15 +83,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
               >
                 <Video size={20} className="group-hover:text-red-400 transition-colors" />
               </Link>
-              <button 
-                className="p-2 hover:bg-youtube-gray rounded-full transition-all duration-200 hover:scale-105 relative group" 
-                title="Notifications"
-              >
-                <Bell size={20} className="group-hover:text-yellow-400 transition-colors" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs flex items-center justify-center animate-pulse">
-                  3
-                </span>
-              </button>
+              <NotificationDropdown />
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}

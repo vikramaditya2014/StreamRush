@@ -12,11 +12,13 @@ import {
   where,
   increment,
   arrayUnion,
-  arrayRemove
+  arrayRemove,
+  serverTimestamp
 } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../config/firebase';
 import { Video, Comment, Playlist, SearchFilters } from '../types';
+import { Notification } from '../types/notification';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
@@ -86,6 +88,57 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       console.error('Error fetching videos:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Helper function to create notifications
+  const createNotification = async (notification: Omit<Notification, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      await addDoc(collection(db, 'notifications'), {
+        ...notification,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('Error creating notification:', error);
+    }
+  };
+
+  // Helper function to notify subscribers about new video upload
+  const notifySubscribers = async (video: Video) => {
+    if (!currentUser || !userProfile) return;
+
+    try {
+      // Get all users who are subscribed to this channel
+      const usersQuery = query(
+        collection(db, 'users'),
+        where('subscribedTo', 'array-contains', currentUser.uid)
+      );
+      
+      const usersSnapshot = await getDocs(usersQuery);
+      
+      // Create notification for each subscriber
+      const notifications = usersSnapshot.docs.map(userDoc => ({
+        userId: userDoc.id,
+        type: 'video_upload' as const,
+        title: `${userProfile.displayName || userProfile.channelName} uploaded a new video`,
+        message: video.title,
+        data: {
+          videoId: video.id,
+          channelId: currentUser.uid,
+          channelName: userProfile.displayName || userProfile.channelName,
+          videoTitle: video.title,
+          thumbnailUrl: video.thumbnailUrl
+        },
+        read: false
+      }));
+
+      // Batch create notifications
+      await Promise.all(notifications.map(notification => createNotification(notification)));
+      
+      console.log(`📢 Notified ${notifications.length} subscribers about new video`);
+    } catch (error) {
+      console.error('Error notifying subscribers:', error);
     }
   };
 
@@ -233,7 +286,11 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updatedAt: new Date()
       };
 
-      await addDoc(collection(db, 'videos'), video);
+      const videoDoc = await addDoc(collection(db, 'videos'), video);
+      const uploadedVideo = { ...video, id: videoDoc.id } as Video;
+      
+      // Notify subscribers about the new video
+      await notifySubscribers(uploadedVideo);
       
       const uploadMethod = useCloudinary ? 'Cloudinary' : useFirebaseStorage ? 'Firebase Storage' : 'Demo Mode';
       toast.success(`Video uploaded successfully via ${uploadMethod}!`, { id: 'upload-progress' });
@@ -483,6 +540,34 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               : video
           )
         );
+        
+        // Notify video owner about the like (if not liking own video)
+        try {
+          const videoDoc = await getDoc(videoRef);
+          if (videoDoc.exists()) {
+            const videoData = videoDoc.data() as Video;
+            
+            if (videoData.uploaderId !== currentUser.uid) {
+              await createNotification({
+                userId: videoData.uploaderId,
+                type: 'like',
+                title: `${userProfile?.displayName || 'Someone'} liked your video`,
+                message: videoData.title,
+                data: {
+                  videoId,
+                  channelId: currentUser.uid,
+                  channelName: userProfile?.displayName || userProfile?.channelName,
+                  videoTitle: videoData.title,
+                  thumbnailUrl: videoData.thumbnailUrl
+                },
+                read: false
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error creating like notification:', error);
+        }
+        
         toast.success('Added to liked videos');
       }
     } catch (error) {
@@ -578,6 +663,34 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       };
 
       await addDoc(collection(db, 'comments'), comment);
+      
+      // Notify video owner about the new comment (if not commenting on own video)
+      try {
+        const videoDoc = await getDoc(doc(db, 'videos', videoId));
+        if (videoDoc.exists()) {
+          const videoData = videoDoc.data() as Video;
+          
+          if (videoData.uploaderId !== currentUser.uid) {
+            await createNotification({
+              userId: videoData.uploaderId,
+              type: 'comment',
+              title: `${userProfile.displayName || 'Someone'} commented on your video`,
+              message: content.trim(),
+              data: {
+                videoId,
+                channelId: currentUser.uid,
+                channelName: userProfile.displayName || userProfile.channelName,
+                videoTitle: videoData.title,
+                thumbnailUrl: videoData.thumbnailUrl
+              },
+              read: false
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error creating comment notification:', error);
+      }
+      
       toast.success('Comment added successfully');
     } catch (error) {
       console.error('Error adding comment:', error);
@@ -599,7 +712,12 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const data = doc.data();
         return {
           id: doc.id,
-          ...data,
+          videoId: data.videoId,
+          userId: data.userId,
+          userName: data.userName,
+          userAvatar: data.userAvatar,
+          content: data.content,
+          likes: data.likes || 0,
           replies: data.replies || [],
           createdAt: data.createdAt?.toDate() || new Date(),
           updatedAt: data.updatedAt?.toDate() || new Date()
@@ -633,7 +751,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const subscribedTo = userData?.subscribedTo || [];
       
       if (subscribedTo.includes(channelId)) {
-        toast.info('Already subscribed to this channel');
+        toast('Already subscribed to this channel');
         return;
       }
 
@@ -646,6 +764,28 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await updateDoc(channelRef, {
         subscribers: increment(1)
       });
+
+      // Notify channel owner about new subscription
+      try {
+        const channelDoc = await getDoc(channelRef);
+        if (channelDoc.exists()) {
+          const channelData = channelDoc.data();
+          
+          await createNotification({
+            userId: channelId,
+            type: 'subscription',
+            title: `${userProfile.displayName || 'Someone'} subscribed to your channel`,
+            message: `You now have a new subscriber!`,
+            data: {
+              channelId: currentUser.uid,
+              channelName: userProfile.displayName || userProfile.channelName
+            },
+            read: false
+          });
+        }
+      } catch (error) {
+        console.error('Error creating subscription notification:', error);
+      }
 
       toast.success('Subscribed successfully!');
     } catch (error) {
@@ -689,15 +829,15 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
     // Implementation for playlists can be added later
-    toast.info('Playlist feature coming soon!');
+    toast('Playlist feature coming soon!');
   };
 
   const addToPlaylist = async (playlistId: string, videoId: string) => {
-    toast.info('Playlist feature coming soon!');
+    toast('Playlist feature coming soon!');
   };
 
   const removeFromPlaylist = async (playlistId: string, videoId: string) => {
-    toast.info('Playlist feature coming soon!');
+    toast('Playlist feature coming soon!');
   };
 
   const getUserPlaylists = async (): Promise<Playlist[]> => {

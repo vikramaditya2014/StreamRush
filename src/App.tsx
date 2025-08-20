@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { VideoProvider } from './contexts/VideoContextWithCloudinary';
+import { NotificationProvider } from './contexts/NotificationContext';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import CorsNotification from './components/CorsNotification';
@@ -20,6 +21,7 @@ import History from './pages/History';
 import LikedVideos from './pages/LikedVideos';
 import Playlists from './pages/Playlists';
 import Admin from './pages/Admin';
+import Notifications from './pages/Notifications';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -41,8 +43,9 @@ function App() {
 
   return (
     <AuthProvider>
-      <VideoProvider>
-        <Router>
+      <NotificationProvider>
+        <VideoProvider>
+          <Router>
           <div className="min-h-screen bg-youtube-dark text-white">
             <Header onToggleSidebar={toggleSidebar} />
             <div className="flex">
@@ -64,6 +67,7 @@ function App() {
                   <Route path="/history" element={<History />} />
                   <Route path="/liked" element={<LikedVideos />} />
                   <Route path="/playlists" element={<Playlists />} />
+                  <Route path="/notifications" element={<Notifications />} />
                   <Route path="/admin" element={<Admin />} />
                 </Routes>
               </main>
@@ -83,8 +87,9 @@ function App() {
               onClose={() => setShowCorsNotification(false)}
             />
           </div>
-        </Router>
-      </VideoProvider>
+          </Router>
+        </VideoProvider>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

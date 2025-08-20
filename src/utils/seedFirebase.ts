@@ -1,6 +1,7 @@
 import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Video, User, Comment } from '../types';
+import { Notification } from '../types/notification';
 
 // Sample users/channels data
 const sampleUsers = [
@@ -228,6 +229,85 @@ const sampleComments = [
   }
 ];
 
+// Sample notifications data
+const sampleNotifications: Omit<Notification, 'id' | 'createdAt' | 'updatedAt'>[] = [
+  {
+    userId: 'techguru-uid-1',
+    type: 'video_upload',
+    title: 'MusicLover uploaded a new video',
+    message: 'Relaxing Jazz Music for Study & Work',
+    data: {
+      videoId: 'sample-video-3',
+      channelId: 'musiclover-uid-2',
+      channelName: 'MusicLover',
+      videoTitle: 'Relaxing Jazz Music for Study & Work',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=640&h=360&fit=crop'
+    },
+    read: false
+  },
+  {
+    userId: 'techguru-uid-1',
+    type: 'comment',
+    title: 'ProGamer commented on your video',
+    message: 'Great tutorial! This really helped me understand TypeScript better.',
+    data: {
+      videoId: 'sample-video-1',
+      channelId: 'progamer-uid-3',
+      channelName: 'ProGamer',
+      videoTitle: 'Building a Modern React App with TypeScript',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=640&h=360&fit=crop'
+    },
+    read: false
+  },
+  {
+    userId: 'techguru-uid-1',
+    type: 'like',
+    title: 'ChefMaster liked your video',
+    message: 'Building a Modern React App with TypeScript',
+    data: {
+      videoId: 'sample-video-1',
+      channelId: 'chefmaster-uid-4',
+      channelName: 'ChefMaster',
+      videoTitle: 'Building a Modern React App with TypeScript',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=640&h=360&fit=crop'
+    },
+    read: true
+  },
+  {
+    userId: 'musiclover-uid-2',
+    type: 'subscription',
+    title: 'TechGuru subscribed to your channel',
+    message: 'You now have a new subscriber!',
+    data: {
+      channelId: 'techguru-uid-1',
+      channelName: 'TechGuru'
+    },
+    read: false
+  },
+  {
+    userId: 'progamer-uid-3',
+    type: 'video_upload',
+    title: 'ChefMaster uploaded a new video',
+    message: '10-Minute Italian Pasta Recipe',
+    data: {
+      videoId: 'sample-video-5',
+      channelId: 'chefmaster-uid-4',
+      channelName: 'ChefMaster',
+      videoTitle: '10-Minute Italian Pasta Recipe',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=640&h=360&fit=crop'
+    },
+    read: false
+  },
+  {
+    userId: 'chefmaster-uid-4',
+    type: 'system',
+    title: 'Welcome to StreamRush!',
+    message: 'Start uploading videos and building your audience. Check out our creator tools and analytics.',
+    data: {},
+    read: true
+  }
+];
+
 export const seedFirebaseData = async () => {
   if (!db) {
     console.error('Firebase not initialized');
@@ -272,13 +352,24 @@ export const seedFirebaseData = async () => {
       });
     }
 
+    // Seed notifications
+    console.log('🔔 Seeding notifications...');
+    for (const notification of sampleNotifications) {
+      await addDoc(collection(db, 'notifications'), {
+        ...notification,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    }
+
     console.log('✅ Firebase data seeding completed successfully!');
-    console.log(`📊 Seeded: ${sampleUsers.length} users, ${sampleVideos.length} videos, ${sampleComments.length} comments`);
+    console.log(`📊 Seeded: ${sampleUsers.length} users, ${sampleVideos.length} videos, ${sampleComments.length} comments, ${sampleNotifications.length} notifications`);
     
     return {
       users: sampleUsers.length,
       videos: sampleVideos.length,
       comments: sampleComments.length,
+      notifications: sampleNotifications.length,
     };
   } catch (error) {
     console.error('❌ Error seeding Firebase data:', error);

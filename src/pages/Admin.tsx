@@ -22,7 +22,7 @@ const Admin: React.FC = () => {
       const result = await seedFirebaseData();
       
       toast.success(
-        `Successfully seeded ${result.users} users, ${result.videos} videos, and ${result.comments} comments!`,
+        `Successfully seeded ${result.users} users, ${result.videos} videos, ${result.comments} comments, and ${result.notifications} notifications!`,
         { id: 'seeding', duration: 5000 }
       );
       
@@ -80,6 +80,7 @@ const Admin: React.FC = () => {
                     <li>• 4 Sample channels (TechGuru, MusicLover, ProGamer, ChefMaster)</li>
                     <li>• 8 Sample videos with real thumbnails and metadata</li>
                     <li>• Sample comments and interactions</li>
+                    <li>• Sample notifications for different user actions</li>
                     <li>• Proper categories and tags</li>
                     <li>• Realistic view counts and engagement metrics</li>
                   </ul>

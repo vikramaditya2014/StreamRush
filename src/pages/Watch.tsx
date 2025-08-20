@@ -266,7 +266,7 @@ const Watch: React.FC = () => {
   const handleDownload = () => {
     if (video) {
       // For now, just show a message. In a real app, you'd implement actual download
-      toast.info('Download feature coming soon! For now, you can right-click the video to save.');
+      toast('Download feature coming soon! For now, you can right-click the video to save.');
     }
   };
 
