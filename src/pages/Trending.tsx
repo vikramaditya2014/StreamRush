@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, Flame } from 'lucide-react';
-import { useVideo } from '../contexts/VideoContext';
+import { useVideo } from '../contexts/VideoContextWithCloudinary';
 import { Video } from '../types';
 import VideoCard from '../components/VideoCard';
 
@@ -20,11 +20,7 @@ const Trending: React.FC = () => {
     'Entertainment'
   ];
 
-  useEffect(() => {
-    loadTrendingVideos();
-  }, []);
-
-  const loadTrendingVideos = async () => {
+  const loadTrendingVideos = useCallback(async () => {
     try {
       setLoading(true);
       const videos = await getTrendingVideos();
@@ -34,7 +30,11 @@ const Trending: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getTrendingVideos]);
+
+  useEffect(() => {
+    loadTrendingVideos();
+  }, [loadTrendingVideos]);
 
   const filteredVideos = selectedCategory === 'All' 
     ? trendingVideos 

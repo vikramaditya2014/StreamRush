@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload as UploadIcon, X, Play } from 'lucide-react';
-import { useVideo } from '../contexts/VideoContext';
+import { Upload as UploadIcon, X } from 'lucide-react';
+import { useVideo } from '../contexts/VideoContextWithCloudinary';
 import { useAuth } from '../contexts/AuthContext';
+import CloudinaryStatus from '../components/CloudinaryStatus';
+import CloudinaryTest from '../components/CloudinaryTest';
 import toast from 'react-hot-toast';
 
 const Upload: React.FC = () => {
@@ -161,6 +163,9 @@ const Upload: React.FC = () => {
           {isDemoMode && <span className="ml-2 px-2 py-1 bg-red-600/20 text-red-400 text-xs rounded-full">Demo Mode</span>}
         </p>
       </div>
+
+      <CloudinaryStatus />
+      <CloudinaryTest />
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Video Upload */}

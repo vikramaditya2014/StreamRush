@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useVideo } from '../contexts/VideoContext';
+import { useVideo } from '../contexts/VideoContextWithCloudinary';
 import VideoCard from '../components/VideoCard';
 import { Loader2, Sparkles } from 'lucide-react';
 
@@ -101,12 +101,20 @@ const Home: React.FC = () => {
                 : `No ${selectedCategory} videos found`
               }
             </h3>
-            <p className="text-youtube-lightgray">
+            <p className="text-youtube-lightgray mb-6">
               {selectedCategory === 'All' 
-                ? 'Be the first to upload amazing content!'
+                ? 'Get started by adding some sample data to your database!'
                 : `Try selecting a different category or check back later.`
               }
             </p>
+            {selectedCategory === 'All' && (
+              <a
+                href="/admin"
+                className="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              >
+                Go to Admin Panel
+              </a>
+            )}
           </div>
         </div>
       )}

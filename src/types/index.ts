@@ -4,9 +4,16 @@ export interface User {
   displayName: string;
   photoURL?: string;
   channelName: string;
+  bio?: string;
+  location?: string;
   subscribers: number;
+  subscriberCount?: number; // For backward compatibility
   subscribedTo: string[];
+  likedVideos?: string[];
+  dislikedVideos?: string[];
+  watchHistory?: string[];
   createdAt: Date;
+  updatedAt?: Date;
 }
 
 export interface Video {

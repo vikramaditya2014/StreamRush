@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Bell } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useVideo } from '../contexts/VideoContext';
+import { useVideo } from '../contexts/VideoContextWithCloudinary';
 import { Video } from '../types';
 import VideoCard from '../components/VideoCard';
 

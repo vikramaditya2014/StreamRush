@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Video as VideoIcon, Settings, Upload, Edit3, Save, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useVideo } from '../contexts/VideoContext';
+import { useVideo } from '../contexts/VideoContextWithCloudinary';
 import { Video } from '../types';
 import VideoCard from '../components/VideoCard';
 import toast from 'react-hot-toast';
@@ -12,13 +12,15 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'videos' | 'analytics' | 'settings'>('videos');
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [editForm, setEditForm] = useState({
     displayName: '',
     channelName: '',
-    bio: ''
+    bio: '',
+    location: ''
   });
   
-  const { currentUser, userProfile } = useAuth();
+  const { currentUser, userProfile, updateProfile } = useAuth();
   const { getChannelVideos, videos } = useVideo();
   const navigate = useNavigate();
 
@@ -33,6 +35,22 @@ const Profile: React.FC = () => {
   };
   
   const currentProfile = isDemoMode ? demoProfile : userProfile;
+
+  const loadUserVideos = useCallback(async () => {
+    if (!currentUser) return;
+    
+    try {
+      const videos = await getChannelVideos(currentUser.uid);
+      setUserVideos(videos);
+    } catch (error) {
+      console.error('Error loading user videos:', error);
+      // Set empty array as fallback
+      setUserVideos([]);
+      toast.error('Failed to load your videos. Please try refreshing the page.');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser, getChannelVideos]);
 
   useEffect(() => {
     if (isDemoMode) {
@@ -49,20 +67,7 @@ const Profile: React.FC = () => {
     }
     
     loadUserVideos();
-  }, [currentUser, videos, isDemoMode]);
-
-  const loadUserVideos = async () => {
-    if (!currentUser) return;
-    
-    try {
-      const videos = await getChannelVideos(currentUser.uid);
-      setUserVideos(videos);
-    } catch (error) {
-      console.error('Error loading user videos:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [currentUser, videos, isDemoMode, navigate, loadUserVideos]);
 
   const totalViews = userVideos.reduce((total, video) => total + video.views, 0);
   const totalLikes = userVideos.reduce((total, video) => total + video.likes, 0);
@@ -71,19 +76,39 @@ const Profile: React.FC = () => {
     setEditForm({
       displayName: currentProfile?.displayName || '',
       channelName: currentProfile?.channelName || '',
-      bio: (currentProfile as any)?.bio || ''
+      bio: (currentProfile as any)?.bio || '',
+      location: (currentProfile as any)?.location || ''
     });
     setIsEditing(true);
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     if (isDemoMode) {
       toast.success('Profile updated! (Demo Mode)');
-    } else {
-      // In real mode, this would update the user profile in Firebase
-      toast.success('Profile updated!');
+      setIsEditing(false);
+      return;
     }
-    setIsEditing(false);
+
+    if (!editForm.displayName.trim()) {
+      toast.error('Display name is required');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      await updateProfile({
+        displayName: editForm.displayName,
+        channelName: editForm.channelName,
+        bio: editForm.bio,
+        location: editForm.location
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -91,7 +116,8 @@ const Profile: React.FC = () => {
     setEditForm({
       displayName: '',
       channelName: '',
-      bio: ''
+      bio: '',
+      location: ''
     });
   };
 
@@ -191,6 +217,16 @@ const Profile: React.FC = () => {
                     placeholder="Tell viewers about your channel"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Location</label>
+                  <input
+                    type="text"
+                    value={editForm.location}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
+                    className="input-field w-full max-w-md"
+                    placeholder="Enter your location"
+                  />
+                </div>
               </div>
             ) : (
               <>
@@ -199,7 +235,10 @@ const Profile: React.FC = () => {
                 </h1>
                 <p className="text-youtube-lightgray mb-2">{currentProfile?.displayName}</p>
                 {(currentProfile as any)?.bio && (
-                  <p className="text-gray-300 mb-4 max-w-2xl">{(currentProfile as any).bio}</p>
+                  <p className="text-gray-300 mb-2 max-w-2xl">{(currentProfile as any).bio}</p>
+                )}
+                {(currentProfile as any)?.location && (
+                  <p className="text-gray-400 mb-4 text-sm">📍 {(currentProfile as any).location}</p>
                 )}
               </>
             )}
@@ -242,14 +281,24 @@ const Profile: React.FC = () => {
               <>
                 <button
                   onClick={handleSaveProfile}
-                  className="btn-primary flex items-center space-x-2"
+                  disabled={isSaving}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                    isSaving 
+                      ? 'bg-gray-600 cursor-not-allowed' 
+                      : 'bg-red-600 hover:bg-red-700'
+                  } text-white`}
                 >
                   <Save size={16} />
-                  <span>Save</span>
+                  <span>{isSaving ? 'Saving...' : 'Save'}</span>
                 </button>
                 <button
                   onClick={handleCancelEdit}
-                  className="btn-secondary flex items-center space-x-2"
+                  disabled={isSaving}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                    isSaving 
+                      ? 'bg-gray-600 cursor-not-allowed' 
+                      : 'bg-youtube-gray hover:bg-gray-600'
+                  } text-white`}
                 >
                   <X size={16} />
                   <span>Cancel</span>

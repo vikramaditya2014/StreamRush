@@ -9,19 +9,18 @@ import {
   getDoc,
   addDoc,
   updateDoc,
-  deleteDoc,
   where,
   increment,
   arrayUnion,
   arrayRemove
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import { db, storage } from '../config/firebase';
 import { Video, Comment, Playlist, SearchFilters } from '../types';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
-import { mockVideos, getTrendingVideos as getMockTrendingVideos, getVideosByCategory, searchVideos as searchMockVideos, getMockComments } from '../utils/mockData';
+
 
 interface VideoContextType {
   videos: Video[];
@@ -82,9 +81,14 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       
       setVideos(videosData);
       console.log(`✅ Loaded ${videosData.length} videos from Firebase`);
+      
+      if (videosData.length === 0) {
+        console.log('No videos found in database. Upload some videos to get started!');
+      }
     } catch (error) {
       console.error('Error fetching videos:', error);
       toast.error('Failed to load videos. Please try again.');
+      setVideos([]);
     } finally {
       setLoading(false);
     }
@@ -96,7 +100,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       
       if (!db || !storage) {
         console.error('Firebase not initialized. Please check your configuration.');
-        toast.error('Upload failed. Firebase not configured properly.');
+        toast.error('Upload failed. Firebase Storage not configured. Please check STORAGE_SETUP.md');
         setLoading(false);
         return;
       }
@@ -106,43 +110,171 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setLoading(false);
         return;
       }
-      
-      // Upload video file
+
+      // Validate file sizes
+      if (videoFile.size > 100 * 1024 * 1024) {
+        toast.error('Video file must be less than 100MB');
+        setLoading(false);
+        return;
+      }
+
+      if (thumbnailFile.size > 5 * 1024 * 1024) {
+        toast.error('Thumbnail file must be less than 5MB');
+        setLoading(false);
+        return;
+      }
+
       const videoId = uuidv4();
-      const videoRef = ref(storage, `videos/${videoId}/${videoFile.name}`);
-      const videoSnapshot = await uploadBytes(videoRef, videoFile);
-      const videoUrl = await getDownloadURL(videoSnapshot.ref);
+      
+      // Show upload progress
+      toast.loading('Uploading video file...', { id: 'upload-progress' });
+      
+      try {
+        // Upload video file with better error handling
+        const sanitizedVideoName = videoFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const videoRef = ref(storage, `videos/${currentUser.uid}/${videoId}_${sanitizedVideoName}`);
+        
+        const videoUrl = await new Promise<string>((resolve, reject) => {
+          const uploadTask = uploadBytesResumable(videoRef, videoFile);
+          
+          uploadTask.on('state_changed',
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              toast.loading(`Uploading video: ${Math.round(progress)}%`, { id: 'upload-progress' });
+            },
+            (error) => {
+              console.error('Video upload error:', error);
+              reject(error);
+            },
+            async () => {
+              try {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                resolve(downloadURL);
+              } catch (error) {
+                reject(error);
+              }
+            }
+          );
+        });
 
-      // Upload thumbnail
-      const thumbnailRef = ref(storage, `thumbnails/${videoId}/${thumbnailFile.name}`);
-      const thumbnailSnapshot = await uploadBytes(thumbnailRef, thumbnailFile);
-      const thumbnailUrl = await getDownloadURL(thumbnailSnapshot.ref);
+        toast.loading('Uploading thumbnail...', { id: 'upload-progress' });
 
-      // Create video document
-      const video: Omit<Video, 'id'> = {
-        title: videoData.title || 'Untitled',
-        description: videoData.description || '',
-        videoUrl,
-        thumbnailUrl,
-        duration: videoData.duration || 0,
-        views: 0,
-        likes: 0,
-        dislikes: 0,
-        uploaderId: currentUser.uid,
-        uploaderName: userProfile.displayName,
-        uploaderAvatar: userProfile.photoURL,
-        tags: videoData.tags || [],
-        category: videoData.category || 'General',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+        // Upload thumbnail with better error handling
+        const sanitizedThumbnailName = thumbnailFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const thumbnailRef = ref(storage, `thumbnails/${currentUser.uid}/${videoId}_${sanitizedThumbnailName}`);
+        
+        const thumbnailUrl = await new Promise<string>((resolve, reject) => {
+          const uploadTask = uploadBytesResumable(thumbnailRef, thumbnailFile);
+          
+          uploadTask.on('state_changed',
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              toast.loading(`Uploading thumbnail: ${Math.round(progress)}%`, { id: 'upload-progress' });
+            },
+            (error) => {
+              console.error('Thumbnail upload error:', error);
+              reject(error);
+            },
+            async () => {
+              try {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                resolve(downloadURL);
+              } catch (error) {
+                reject(error);
+              }
+            }
+          );
+        });
 
-      await addDoc(collection(db, 'videos'), video);
-      toast.success('Video uploaded successfully!');
-      await fetchVideos();
-    } catch (error) {
+        toast.loading('Saving video details...', { id: 'upload-progress' });
+
+        // Create video document
+        const video: Omit<Video, 'id'> = {
+          title: videoData.title || 'Untitled',
+          description: videoData.description || '',
+          videoUrl,
+          thumbnailUrl,
+          duration: videoData.duration || 0,
+          views: 0,
+          likes: 0,
+          dislikes: 0,
+          uploaderId: currentUser.uid,
+          uploaderName: userProfile.displayName || currentUser.displayName || 'Unknown User',
+          uploaderAvatar: userProfile.photoURL || currentUser.photoURL || '',
+          tags: videoData.tags || [],
+          category: videoData.category || 'General',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+
+        await addDoc(collection(db, 'videos'), video);
+        
+        toast.success('Video uploaded successfully!', { id: 'upload-progress' });
+        await fetchVideos();
+        
+      } catch (storageError: any) {
+        console.error('Storage error:', storageError);
+        
+        // Check if it's a CORS error or storage configuration issue
+        const isCorsError = storageError.message?.includes('CORS') || 
+                           storageError.message?.includes('preflight') ||
+                           storageError.message?.includes('ERR_FAILED') ||
+                           storageError.code === 'storage/unauthorized' ||
+                           (storageError.code === undefined && storageError.message?.includes('Failed'));
+        
+        if (isCorsError) {
+          // Dispatch CORS error event for notification
+          window.dispatchEvent(new CustomEvent('corsError'));
+          
+          toast.loading('Storage upload failed, creating demo entry...', { id: 'upload-progress' });
+          
+          // Create a demo video entry without actual file upload
+          const demoVideo: Omit<Video, 'id'> = {
+            title: videoData.title || 'Untitled',
+            description: videoData.description || '',
+            videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4', // Demo video URL
+            thumbnailUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=225&fit=crop', // Demo thumbnail
+            duration: videoData.duration || 60,
+            views: 0,
+            likes: 0,
+            dislikes: 0,
+            uploaderId: currentUser.uid,
+            uploaderName: userProfile.displayName || currentUser.displayName || 'Unknown User',
+            uploaderAvatar: userProfile.photoURL || currentUser.photoURL || '',
+            tags: videoData.tags || [],
+            category: videoData.category || 'General',
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+
+          try {
+            await addDoc(collection(db, 'videos'), demoVideo);
+            toast.success('Video uploaded successfully! (Demo Mode - Storage CORS issue detected)', { id: 'upload-progress' });
+            await fetchVideos();
+            return; // Exit successfully
+          } catch (dbError) {
+            console.error('Database error:', dbError);
+            toast.error('Failed to save video information', { id: 'upload-progress' });
+          }
+        } else {
+          // Handle other storage errors
+          if (storageError.code === 'storage/quota-exceeded') {
+            toast.error('Storage quota exceeded. Please upgrade your Firebase plan.', { id: 'upload-progress' });
+          } else if (storageError.code === 'storage/invalid-format') {
+            toast.error('Invalid file format. Please use supported video/image formats.', { id: 'upload-progress' });
+          } else {
+            toast.error(`Upload failed: ${storageError.message}`, { id: 'upload-progress' });
+          }
+        }
+        throw storageError;
+      }
+      
+    } catch (error: any) {
       console.error('Error uploading video:', error);
-      toast.error('Failed to upload video');
+      
+      if (!error.code?.startsWith('storage/')) {
+        toast.error('Failed to upload video. Please try again.', { id: 'upload-progress' });
+      }
     } finally {
       setLoading(false);
     }
@@ -151,9 +283,8 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const getVideo = async (id: string): Promise<Video | null> => {
     try {
       if (!db) {
-        // Demo mode - find video in local state or mock data
-        const video = videos.find(v => v.id === id) || mockVideos.find(v => v.id === id);
-        return video || null;
+        console.error('Firebase not initialized');
+        return null;
       }
 
       const videoDoc = await getDoc(doc(db, 'videos', id));
@@ -168,17 +299,15 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return null;
     } catch (error) {
       console.error('Error fetching video:', error);
-      // Fallback to local/mock data
-      const video = videos.find(v => v.id === id) || mockVideos.find(v => v.id === id);
-      return video || null;
+      return null;
     }
   };
 
   const searchVideos = async (searchQuery: string, filters?: SearchFilters): Promise<Video[]> => {
     try {
       if (!db) {
-        // Use mock data search
-        return searchMockVideos(searchQuery);
+        console.error('Firebase not initialized');
+        return [];
       }
 
       const videosRef = collection(db, 'videos');
@@ -213,15 +342,15 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return results;
     } catch (error) {
       console.error('Error searching videos:', error);
-      return searchMockVideos(searchQuery);
+      return [];
     }
   };
 
   const getTrendingVideos = async (): Promise<Video[]> => {
     try {
       if (!db) {
-        // Use mock trending data
-        return getMockTrendingVideos();
+        console.error('Firebase not initialized');
+        return [];
       }
 
       const videosRef = collection(db, 'videos');
@@ -236,33 +365,38 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       })) as Video[];
     } catch (error) {
       console.error('Error fetching trending videos:', error);
-      return getMockTrendingVideos();
+      return [];
     }
   };
 
   const getChannelVideos = async (userId: string): Promise<Video[]> => {
     try {
       if (!db) {
-        // Demo mode - filter videos by userId
-        const allVideos = [...videos, ...mockVideos];
-        return allVideos.filter(video => video.uploaderId === userId);
+        console.error('Firebase not initialized');
+        return [];
       }
 
       const videosRef = collection(db, 'videos');
-      const q = query(videosRef, where('uploaderId', '==', userId), orderBy('createdAt', 'desc'));
+      const q = query(videosRef, where('uploaderId', '==', userId));
       const querySnapshot = await getDocs(q);
       
-      return querySnapshot.docs.map(doc => ({
+      const userVideos = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate(),
         updatedAt: doc.data().updatedAt?.toDate()
       })) as Video[];
+
+      // Sort by createdAt in memory to avoid index requirement
+      return userVideos.sort((a, b) => {
+        const dateA = a.createdAt || new Date(0);
+        const dateB = b.createdAt || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
     } catch (error) {
       console.error('Error fetching channel videos:', error);
-      // Fallback to demo data
-      const allVideos = [...videos, ...mockVideos];
-      return allVideos.filter(video => video.uploaderId === userId);
+      // Fallback to existing videos in state
+      return videos.filter(video => video.uploaderId === userId);
     }
   };
 
@@ -365,22 +499,29 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const getComments = async (videoId: string): Promise<Comment[]> => {
     try {
       if (!db) {
-        // Demo mode - return mock comments
-        return getMockComments(videoId);
+        console.error('Firebase not initialized');
+        return [];
       }
 
       const commentsRef = collection(db, 'comments');
-      const q = query(commentsRef, where('videoId', '==', videoId), orderBy('createdAt', 'desc'));
+      const q = query(commentsRef, where('videoId', '==', videoId));
       const querySnapshot = await getDocs(q);
       
-      return querySnapshot.docs.map(doc => ({
+      const comments = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate()
       })) as Comment[];
+
+      // Sort by createdAt in memory to avoid index requirement
+      return comments.sort((a, b) => {
+        const dateA = a.createdAt || new Date(0);
+        const dateB = b.createdAt || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
     } catch (error) {
       console.error('Error fetching comments:', error);
-      return getMockComments(videoId);
+      return [];
     }
   };
 

@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter, SlidersHorizontal } from 'lucide-react';
-import { useVideo } from '../contexts/VideoContext';
+import { SlidersHorizontal } from 'lucide-react';
+import { useVideo } from '../contexts/VideoContextWithCloudinary';
 import { Video, SearchFilters } from '../types';
-import VideoCard from '../components/VideoCard';
 
 const Search: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -24,9 +23,9 @@ const Search: React.FC = () => {
     if (query) {
       performSearch();
     }
-  }, [query, filters]);
+  }, [query, filters, performSearch]);
 
-  const performSearch = async () => {
+  const performSearch = useCallback(async () => {
     setLoading(true);
     try {
       const searchResults = await searchVideos(query, filters);
@@ -36,7 +35,7 @@ const Search: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [query, filters, searchVideos]);
 
   const handleFilterChange = (key: keyof SearchFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -87,7 +86,7 @@ const Search: React.FC = () => {
               <label className="block text-sm font-medium mb-2">Sort by</label>
               <select
                 value={filters.sortBy}
-                onChange={(e) => handleFilterChange('sortBy', e.target.value as any)}
+                onChange={(e) => handleFilterChange('sortBy', e.target.value as SearchFilters['sortBy'])}
                 className="input-field w-full"
               >
                 <option value="relevance">Relevance</option>
@@ -101,7 +100,7 @@ const Search: React.FC = () => {
               <label className="block text-sm font-medium mb-2">Upload date</label>
               <select
                 value={filters.uploadDate}
-                onChange={(e) => handleFilterChange('uploadDate', e.target.value as any)}
+                onChange={(e) => handleFilterChange('uploadDate', e.target.value as SearchFilters['uploadDate'])}
                 className="input-field w-full"
               >
                 <option value="any">Any time</option>
@@ -117,7 +116,7 @@ const Search: React.FC = () => {
               <label className="block text-sm font-medium mb-2">Duration</label>
               <select
                 value={filters.duration}
-                onChange={(e) => handleFilterChange('duration', e.target.value as any)}
+                onChange={(e) => handleFilterChange('duration', e.target.value as SearchFilters['duration'])}
                 className="input-field w-full"
               >
                 <option value="any">Any duration</option>

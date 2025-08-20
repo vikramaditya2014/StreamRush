@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import ReactPlayer from 'react-player';
 import { formatDistanceToNow } from 'date-fns';
 import { ThumbsUp, ThumbsDown, Share, Download, MoreHorizontal, Bell } from 'lucide-react';
-import { useVideo } from '../contexts/VideoContext';
+import { useVideo } from '../contexts/VideoContextWithCloudinary';
 import { useAuth } from '../contexts/AuthContext';
 import { Video, Comment } from '../types';
-import VideoCard from '../components/VideoCard';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
+
 import toast from 'react-hot-toast';
 
 const Watch: React.FC = () => {
@@ -17,6 +19,9 @@ const Watch: React.FC = () => {
   const [showDescription, setShowDescription] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
+  const [userLikedVideo, setUserLikedVideo] = useState(false);
+  const [userDislikedVideo, setUserDislikedVideo] = useState(false);
+  const [channelData, setChannelData] = useState<any>(null);
   
   const { 
     getVideo, 
@@ -31,63 +36,166 @@ const Watch: React.FC = () => {
   } = useVideo();
   
   const { currentUser, userProfile } = useAuth();
+  const navigate = useNavigate();
+
+  const loadVideo = useCallback(async () => {
+    if (id) {
+      const videoData = await getVideo(id);
+      setVideo(videoData);
+      
+      // Load channel data for subscriber count
+      if (videoData?.uploaderId) {
+        try {
+          const channelDoc = await getDoc(doc(db, 'users', videoData.uploaderId));
+          if (channelDoc.exists()) {
+            setChannelData(channelDoc.data());
+          }
+        } catch (error) {
+          console.error('Error loading channel data:', error);
+        }
+      }
+    }
+  }, [id, getVideo]);
+
+  const loadComments = useCallback(async () => {
+    if (id) {
+      const commentsData = await getComments(id);
+      setComments(commentsData);
+    }
+  }, [id, getComments]);
+
+  const checkUserLikeStatus = useCallback(async () => {
+    if (currentUser && userProfile && video) {
+      const likedVideos = userProfile.likedVideos || [];
+      const dislikedVideos = userProfile.dislikedVideos || [];
+      
+      setUserLikedVideo(likedVideos.includes(video.id));
+      setUserDislikedVideo(dislikedVideos.includes(video.id));
+    } else {
+      setUserLikedVideo(false);
+      setUserDislikedVideo(false);
+    }
+  }, [currentUser, userProfile, video]);
 
   useEffect(() => {
     if (id) {
       loadVideo();
       loadComments();
       incrementViews(id);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (video) {
-      // Load related videos (same category or random)
-      const related = videos
-        .filter(v => v.id !== video.id && (v.category === video.category || Math.random() > 0.5))
-        .slice(0, 10);
-      setRelatedVideos(related);
       
-      // Check if user is subscribed
-      if (userProfile) {
-        setIsSubscribed(userProfile.subscribedTo.includes(video.uploaderId));
+      // Add to watch history if user is logged in
+      if (currentUser && userProfile) {
+        const addToWatchHistory = async () => {
+          try {
+            const userRef = doc(db, 'users', currentUser.uid);
+            const currentHistory = userProfile.watchHistory || [];
+            
+            // Remove if already exists and add to front
+            const updatedHistory = [id, ...currentHistory.filter(videoId => videoId !== id)].slice(0, 100); // Keep last 100 videos
+            
+            await updateDoc(userRef, {
+              watchHistory: updatedHistory
+            });
+          } catch (error) {
+            console.error('Error updating watch history:', error);
+          }
+        };
+        
+        addToWatchHistory();
       }
     }
-  }, [video, videos, userProfile]);
+  }, [id, loadVideo, loadComments, incrementViews, currentUser, userProfile]);
 
-  const loadVideo = async () => {
-    if (id) {
-      const videoData = await getVideo(id);
-      setVideo(videoData);
+  useEffect(() => {
+    if (video && videos.length > 0) {
+      // YouTube-like recommendation algorithm
+      const currentVideoTags = video.tags || [];
+      const currentCategory = video.category;
+      const currentUploaderId = video.uploaderId;
+      
+      // Score videos based on relevance
+      const scoredVideos = videos
+        .filter(v => v.id !== video.id)
+        .map(v => {
+          let score = 0;
+          
+          // Same category gets high score
+          if (v.category === currentCategory) score += 50;
+          
+          // Same uploader gets medium score
+          if (v.uploaderId === currentUploaderId) score += 30;
+          
+          // Tag similarity
+          const commonTags = v.tags?.filter(tag => 
+            currentVideoTags.some(currentTag => 
+              currentTag.toLowerCase().includes(tag.toLowerCase()) ||
+              tag.toLowerCase().includes(currentTag.toLowerCase())
+            )
+          ) || [];
+          score += commonTags.length * 20;
+          
+          // Popular videos get bonus (views and likes)
+          score += Math.log10(v.views + 1) * 5;
+          score += Math.log10(v.likes + 1) * 3;
+          
+          // Recent videos get slight bonus
+          const daysSinceUpload = (Date.now() - v.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+          if (daysSinceUpload < 7) score += 10;
+          else if (daysSinceUpload < 30) score += 5;
+          
+          // User's subscribed channels get bonus
+          if (userProfile?.subscribedTo?.includes(v.uploaderId)) {
+            score += 25;
+          }
+          
+          return { ...v, score };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 15); // Get top 15 recommendations
+      
+      setRelatedVideos(scoredVideos);
+      
+      // Check if user is subscribed
+      if (userProfile && userProfile.subscribedTo && video) {
+        setIsSubscribed(userProfile.subscribedTo.includes(video.uploaderId));
+      } else {
+        setIsSubscribed(false);
+      }
+      
+      // Check user's like/dislike status
+      checkUserLikeStatus();
     }
-  };
-
-  const loadComments = async () => {
-    if (id) {
-      const commentsData = await getComments(id);
-      setComments(commentsData);
-    }
-  };
+  }, [video, videos, userProfile, checkUserLikeStatus]);
 
   const handleLike = async () => {
-    if (!currentUser) {
-      toast.error('Please login to like videos');
-      return;
-    }
     if (video) {
       await likeVideo(video.id);
-      setVideo(prev => prev ? { ...prev, likes: prev.likes + 1 } : null);
+      // Update local state immediately for better UX
+      setUserLikedVideo(!userLikedVideo);
+      if (userDislikedVideo) {
+        setUserDislikedVideo(false);
+      }
+      // Refresh video data
+      const updatedVideo = await getVideo(video.id);
+      if (updatedVideo) {
+        setVideo(updatedVideo);
+      }
     }
   };
 
   const handleDislike = async () => {
-    if (!currentUser) {
-      toast.error('Please login to dislike videos');
-      return;
-    }
     if (video) {
       await dislikeVideo(video.id);
-      setVideo(prev => prev ? { ...prev, dislikes: prev.dislikes + 1 } : null);
+      // Update local state immediately for better UX
+      setUserDislikedVideo(!userDislikedVideo);
+      if (userLikedVideo) {
+        setUserLikedVideo(false);
+      }
+      // Refresh video data
+      const updatedVideo = await getVideo(video.id);
+      if (updatedVideo) {
+        setVideo(updatedVideo);
+      }
     }
   };
 
@@ -97,13 +205,68 @@ const Watch: React.FC = () => {
       return;
     }
     if (video) {
-      if (isSubscribed) {
-        await unsubscribeFromChannel(video.uploaderId);
-        setIsSubscribed(false);
-      } else {
-        await subscribeToChannel(video.uploaderId);
-        setIsSubscribed(true);
+      try {
+        if (isSubscribed) {
+          await unsubscribeFromChannel(video.uploaderId);
+          setIsSubscribed(false);
+          // Update channel data to reflect new subscriber count
+          if (channelData) {
+            setChannelData({
+              ...channelData,
+              subscribers: Math.max(0, channelData.subscribers - 1)
+            });
+          }
+        } else {
+          await subscribeToChannel(video.uploaderId);
+          setIsSubscribed(true);
+          // Update channel data to reflect new subscriber count
+          if (channelData) {
+            setChannelData({
+              ...channelData,
+              subscribers: channelData.subscribers + 1
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error handling subscription:', error);
+        // Revert the UI state if the operation failed
+        setIsSubscribed(!isSubscribed);
       }
+    }
+  };
+
+  const handleShare = async () => {
+    if (video) {
+      const shareUrl = `${window.location.origin}/watch/${video.id}`;
+      
+      if (navigator.share) {
+        // Use native share API if available
+        try {
+          await navigator.share({
+            title: video.title,
+            text: `Check out this video: ${video.title}`,
+            url: shareUrl,
+          });
+          toast.success('Shared successfully!');
+        } catch (error) {
+          // User cancelled sharing
+        }
+      } else {
+        // Fallback to clipboard
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          toast.success('Link copied to clipboard!');
+        } catch (error) {
+          toast.error('Failed to copy link');
+        }
+      }
+    }
+  };
+
+  const handleDownload = () => {
+    if (video) {
+      // For now, just show a message. In a real app, you'd implement actual download
+      toast.info('Download feature coming soon! For now, you can right-click the video to save.');
     }
   };
 
@@ -138,6 +301,15 @@ const Watch: React.FC = () => {
     return num.toString();
   };
 
+  const formatSubscribers = (count: number) => {
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M subscribers`;
+    } else if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}K subscribers`;
+    }
+    return `${count} subscribers`;
+  };
+
   if (!video) {
     return (
       <div className="pt-16 px-6">
@@ -163,6 +335,27 @@ const Watch: React.FC = () => {
               height="100%"
               controls
               playing={false}
+              config={{
+                file: {
+                  attributes: {
+                    crossOrigin: 'anonymous',
+                    controlsList: 'nodownload'
+                  }
+                }
+              }}
+              onError={(error) => {
+                console.error('Video player error:', error);
+                toast.error('Error loading video. Please try refreshing the page.');
+              }}
+              fallback={
+                <div className="flex items-center justify-center h-full bg-youtube-gray">
+                  <div className="text-center">
+                    <div className="text-4xl mb-4">📹</div>
+                    <p className="text-white">Video not available</p>
+                    <p className="text-youtube-lightgray text-sm">Please try again later</p>
+                  </div>
+                </div>
+              }
             />
           </div>
 
@@ -180,26 +373,40 @@ const Watch: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={handleLike}
-                  className="flex items-center space-x-2 bg-youtube-gray hover:bg-gray-600 px-4 py-2 rounded-full transition-colors"
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${
+                    userLikedVideo 
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                      : 'bg-youtube-gray hover:bg-gray-600'
+                  }`}
                 >
-                  <ThumbsUp size={20} />
+                  <ThumbsUp size={20} className={userLikedVideo ? 'fill-current' : ''} />
                   <span>{formatNumber(video.likes)}</span>
                 </button>
                 
                 <button
                   onClick={handleDislike}
-                  className="flex items-center space-x-2 bg-youtube-gray hover:bg-gray-600 px-4 py-2 rounded-full transition-colors"
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${
+                    userDislikedVideo 
+                      ? 'bg-red-600 hover:bg-red-700 text-white' 
+                      : 'bg-youtube-gray hover:bg-gray-600'
+                  }`}
                 >
-                  <ThumbsDown size={20} />
+                  <ThumbsDown size={20} className={userDislikedVideo ? 'fill-current' : ''} />
                   <span>{formatNumber(video.dislikes)}</span>
                 </button>
                 
-                <button className="flex items-center space-x-2 bg-youtube-gray hover:bg-gray-600 px-4 py-2 rounded-full transition-colors">
+                <button 
+                  onClick={handleShare}
+                  className="flex items-center space-x-2 bg-youtube-gray hover:bg-gray-600 px-4 py-2 rounded-full transition-colors"
+                >
                   <Share size={20} />
                   <span>Share</span>
                 </button>
                 
-                <button className="flex items-center space-x-2 bg-youtube-gray hover:bg-gray-600 px-4 py-2 rounded-full transition-colors">
+                <button 
+                  onClick={handleDownload}
+                  className="flex items-center space-x-2 bg-youtube-gray hover:bg-gray-600 px-4 py-2 rounded-full transition-colors"
+                >
                   <Download size={20} />
                   <span>Download</span>
                 </button>
@@ -229,7 +436,9 @@ const Watch: React.FC = () => {
                 
                 <div>
                   <h3 className="font-semibold">{video.uploaderName}</h3>
-                  <p className="text-sm text-youtube-lightgray">1.2M subscribers</p>
+                  <p className="text-sm text-youtube-lightgray">
+                    {channelData ? formatSubscribers(channelData.subscribers || 0) : 'Loading...'}
+                  </p>
                 </div>
               </div>
               
@@ -278,7 +487,7 @@ const Watch: React.FC = () => {
                       />
                     ) : (
                       <div className="w-full h-full bg-youtube-red flex items-center justify-center text-white font-bold">
-                        {userProfile?.displayName.charAt(0).toUpperCase()}
+                        {userProfile?.displayName?.charAt(0).toUpperCase() || 'U'}
                       </div>
                     )}
                   </div>
@@ -368,20 +577,31 @@ const Watch: React.FC = () => {
           <h2 className="text-lg font-semibold mb-4">Related Videos</h2>
           <div className="space-y-4">
             {relatedVideos.map((relatedVideo) => (
-              <div key={relatedVideo.id} className="flex space-x-3">
+              <div 
+                key={relatedVideo.id} 
+                className="flex space-x-3 cursor-pointer hover:bg-youtube-gray rounded-lg p-2 transition-colors"
+                onClick={() => navigate(`/watch/${relatedVideo.id}`)}
+                data-testid="related-video"
+              >
                 <div className="w-40 aspect-video rounded overflow-hidden flex-shrink-0">
                   <img
                     src={relatedVideo.thumbnailUrl}
                     alt={relatedVideo.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform"
                   />
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-sm line-clamp-2 mb-1">
+                  <h3 className="font-semibold text-sm line-clamp-2 mb-1 hover:text-youtube-red transition-colors">
                     {relatedVideo.title}
                   </h3>
-                  <p className="text-xs text-youtube-lightgray mb-1">
+                  <p 
+                    className="text-xs text-youtube-lightgray mb-1 hover:text-white transition-colors cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/channel/${relatedVideo.uploaderId}`);
+                    }}
+                  >
                     {relatedVideo.uploaderName}
                   </p>
                   <div className="text-xs text-youtube-lightgray">

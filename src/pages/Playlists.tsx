@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PlaySquare, Plus, Lock, Globe } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useVideo } from '../contexts/VideoContext';
+import { useVideo } from '../contexts/VideoContextWithCloudinary';
 import { Playlist } from '../types';
 
 const Playlists: React.FC = () => {
@@ -23,9 +23,9 @@ const Playlists: React.FC = () => {
     } else {
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, loadPlaylists]);
 
-  const loadPlaylists = async () => {
+  const loadPlaylists = useCallback(async () => {
     try {
       const userPlaylists = await getUserPlaylists();
       setPlaylists(userPlaylists);
@@ -34,7 +34,7 @@ const Playlists: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getUserPlaylists]);
 
   const handleCreatePlaylist = async (e: React.FormEvent) => {
     e.preventDefault();

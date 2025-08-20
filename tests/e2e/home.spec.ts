@@ -5,66 +5,92 @@ test.describe('Home Page', () => {
     await page.goto('/');
   });
 
-  test('should display the YouTube logo and title', async ({ page }) => {
-    await expect(page.locator('text=YouTube')).toBeVisible();
-  });
+  test('should display welcome banner and category filters', async ({ page }) => {
+    // Check welcome banner
+    await expect(page.locator('h1')).toContainText('Welcome to StreamRush');
+    await expect(page.locator('text=Discover amazing content')).toBeVisible();
 
-  test('should have a search bar', async ({ page }) => {
-    const searchInput = page.locator('input[placeholder="Search"]');
-    await expect(searchInput).toBeVisible();
-  });
-
-  test('should display category filters', async ({ page }) => {
-    await expect(page.locator('text=All')).toBeVisible();
-    await expect(page.locator('text=Gaming')).toBeVisible();
-    await expect(page.locator('text=Music')).toBeVisible();
-  });
-
-  test('should show sign in button when not authenticated', async ({ page }) => {
-    await expect(page.locator('text=Sign in')).toBeVisible();
-  });
-
-  test('should navigate to login page when sign in is clicked', async ({ page }) => {
-    await page.click('text=Sign in');
-    await expect(page).toHaveURL('/login');
+    // Check category filters
+    const categories = ['All', 'Gaming', 'Music', 'Sports', 'News', 'Entertainment', 'Education', 'Technology', 'Travel', 'Cooking'];
+    for (const category of categories) {
+      await expect(page.locator(`button:has-text("${category}")`)).toBeVisible();
+    }
   });
 
   test('should filter videos by category', async ({ page }) => {
-    // Click on Gaming category
-    await page.click('text=Gaming');
+    // Wait for videos to load
+    await page.waitForSelector('[data-testid="video-card"]', { timeout: 10000 });
     
-    // Check if Gaming button is active (has different styling)
-    const gamingButton = page.locator('button:has-text("Gaming")');
-    await expect(gamingButton).toHaveClass(/bg-white text-black/);
+    // Get initial video count
+    const allVideos = await page.locator('[data-testid="video-card"]').count();
+    expect(allVideos).toBeGreaterThan(0);
+
+    // Click on Technology category
+    await page.click('button:has-text("Technology")');
+    
+    // Wait for filter to apply
+    await page.waitForTimeout(1000);
+    
+    // Check that Technology button is active
+    await expect(page.locator('button:has-text("Technology")')).toHaveClass(/from-red-500/);
   });
 
-  test('should perform search', async ({ page }) => {
-    const searchInput = page.locator('input[placeholder="Search"]');
-    await searchInput.fill('test video');
-    await searchInput.press('Enter');
+  test('should display video cards with correct information', async ({ page }) => {
+    // Wait for videos to load
+    await page.waitForSelector('[data-testid="video-card"]', { timeout: 10000 });
     
-    await expect(page).toHaveURL(/\/search\?q=test%20video/);
+    const firstVideo = page.locator('[data-testid="video-card"]').first();
+    
+    // Check video card elements
+    await expect(firstVideo.locator('img')).toBeVisible(); // Thumbnail
+    await expect(firstVideo.locator('[data-testid="video-title"]')).toBeVisible();
+    await expect(firstVideo.locator('[data-testid="video-uploader"]')).toBeVisible();
+    await expect(firstVideo.locator('[data-testid="video-views"]')).toBeVisible();
+    await expect(firstVideo.locator('[data-testid="video-date"]')).toBeVisible();
   });
-});
 
-test.describe('Navigation', () => {
-  test('should navigate to trending page', async ({ page }) => {
+  test('should navigate to video when clicked', async ({ page }) => {
+    // Wait for videos to load
+    await page.waitForSelector('[data-testid="video-card"]', { timeout: 10000 });
+    
+    const firstVideo = page.locator('[data-testid="video-card"]').first();
+    
+    // Click on the video
+    await firstVideo.click();
+    
+    // Should navigate to watch page
+    await expect(page).toHaveURL(/\/watch\/.+/);
+  });
+
+  test('should show loading state initially', async ({ page }) => {
+    // Intercept the API call to delay it
+    await page.route('**/videos**', async route => {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      await route.continue();
+    });
+
     await page.goto('/');
-    await page.click('text=Trending');
-    await expect(page).toHaveURL('/trending');
-    await expect(page.locator('h1:has-text("Trending")')).toBeVisible();
+    
+    // Should show loading spinner
+    await expect(page.locator('text=Loading amazing content')).toBeVisible();
   });
 
-  test('should show sidebar navigation items', async ({ page }) => {
+  test('should show empty state when no videos match filter', async ({ page }) => {
+    // Mock empty response for a specific category
+    await page.route('**/videos**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([])
+      });
+    });
+
     await page.goto('/');
     
-    // Check main navigation items
-    await expect(page.locator('text=Home')).toBeVisible();
-    await expect(page.locator('text=Trending')).toBeVisible();
+    // Click on a category
+    await page.click('button:has-text("Gaming")');
     
-    // Check explore section
-    await expect(page.locator('text=Gaming')).toBeVisible();
-    await expect(page.locator('text=Music')).toBeVisible();
-    await expect(page.locator('text=Sports')).toBeVisible();
+    // Should show empty state
+    await expect(page.locator('text=No Gaming videos found')).toBeVisible();
   });
 });

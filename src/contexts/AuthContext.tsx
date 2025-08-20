@@ -9,7 +9,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { User } from '../types';
 import toast from 'react-hot-toast';
@@ -21,6 +21,7 @@ interface AuthContextType {
   register: (email: string, password: string, displayName: string, channelName: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  updateProfile: (updates: Partial<User>) => Promise<void>;
   loading: boolean;
 }
 
@@ -58,6 +59,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         channelName: additionalData.channelName || displayName || 'My Channel',
         subscribers: 0,
         subscribedTo: [],
+        likedVideos: [],
+        dislikedVideos: [],
+        watchHistory: [],
         createdAt: new Date(),
         ...additionalData
       };
@@ -83,7 +87,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await signInWithEmailAndPassword(auth, email, password);
       toast.success('Logged in successfully!');
     } catch (error: any) {
-      toast.error(error.message);
+      if (error.code === 'auth/unauthorized-domain') {
+        toast.error('This domain is not authorized for Firebase authentication. Please add localhost to authorized domains in Firebase Console.');
+        console.error('Firebase Auth Error: Please add localhost to authorized domains in Firebase Console > Authentication > Settings > Authorized domains');
+      } else {
+        toast.error(error.message);
+      }
       throw error;
     }
   };
@@ -99,7 +108,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await createUserProfile(user, { displayName, channelName });
       toast.success('Account created successfully!');
     } catch (error: any) {
-      toast.error(error.message);
+      if (error.code === 'auth/unauthorized-domain') {
+        toast.error('This domain is not authorized for Firebase authentication. Please add localhost to authorized domains in Firebase Console.');
+        console.error('Firebase Auth Error: Please add localhost to authorized domains in Firebase Console > Authentication > Settings > Authorized domains');
+      } else {
+        toast.error(error.message);
+      }
       throw error;
     }
   };
@@ -115,7 +129,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await createUserProfile(user);
       toast.success('Logged in with Google successfully!');
     } catch (error: any) {
-      toast.error(error.message);
+      if (error.code === 'auth/unauthorized-domain') {
+        toast.error('This domain is not authorized for Firebase authentication. Please add localhost to authorized domains in Firebase Console.');
+        console.error('Firebase Auth Error: Please add localhost to authorized domains in Firebase Console > Authentication > Settings > Authorized domains');
+      } else {
+        toast.error(error.message);
+      }
       throw error;
     }
   };
@@ -130,7 +149,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUserProfile(null);
       toast.success('Logged out successfully!');
     } catch (error: any) {
-      toast.error(error.message);
+      if (error.code === 'auth/unauthorized-domain') {
+        toast.error('This domain is not authorized for Firebase authentication. Please add localhost to authorized domains in Firebase Console.');
+        console.error('Firebase Auth Error: Please add localhost to authorized domains in Firebase Console > Authentication > Settings > Authorized domains');
+      } else {
+        toast.error(error.message);
+      }
+      throw error;
+    }
+  };
+
+  const updateUserProfile = async (updates: Partial<User>) => {
+    if (!currentUser || !db) {
+      toast.error('User not authenticated or database not available');
+      throw new Error('User not authenticated or database not available');
+    }
+
+    try {
+      const userRef = doc(db, 'users', currentUser.uid);
+      
+      // Prepare the update data
+      const updateData = {
+        ...updates,
+        updatedAt: new Date()
+      };
+
+      // Update Firestore document
+      await updateDoc(userRef, updateData);
+
+      // Update Firebase Auth profile if displayName is being updated
+      if (updates.displayName && auth) {
+        await updateProfile(currentUser, {
+          displayName: updates.displayName
+        });
+      }
+
+      // Update local state
+      setUserProfile(prev => prev ? { ...prev, ...updateData } : null);
+      
+      toast.success('Profile updated successfully!');
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile: ' + error.message);
       throw error;
     }
   };
@@ -162,6 +222,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     register,
     loginWithGoogle,
     logout,
+    updateProfile: updateUserProfile,
     loading
   };
 

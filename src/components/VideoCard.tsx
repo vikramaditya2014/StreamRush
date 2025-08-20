@@ -10,7 +10,7 @@ interface VideoCardProps {
 }
 
 const VideoCard: React.FC<VideoCardProps> = ({ video, size = 'medium' }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [, setIsHovered] = useState(false);
 
   const formatViews = (views: number) => {
     if (views >= 1000000) {
@@ -49,6 +49,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, size = 'medium' }) => {
       className={`group bg-youtube-dark rounded-xl overflow-hidden hover:bg-youtube-gray transition-all duration-300 cursor-pointer transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-black/50 ${cardClasses[size]}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      data-testid="video-card"
     >
       <Link to={`/watch/${video.id}`} className="block">
         <div className={`relative ${thumbnailClasses[size]} overflow-hidden`}>
@@ -110,7 +111,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, size = 'medium' }) => {
 
           <div className="flex-1 min-w-0">
             <Link to={`/watch/${video.id}`}>
-              <h3 className="font-semibold text-white line-clamp-2 hover:text-red-400 transition-colors duration-200 mb-1">
+              <h3 className="font-semibold text-white line-clamp-2 hover:text-red-400 transition-colors duration-200 mb-1" data-testid="video-title">
                 {video.title}
               </h3>
             </Link>
@@ -118,14 +119,15 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, size = 'medium' }) => {
             <Link
               to={`/channel/${video.uploaderId}`}
               className="text-youtube-lightgray text-sm hover:text-white transition-colors duration-200 font-medium"
+              data-testid="video-uploader"
             >
               {video.uploaderName}
             </Link>
             
             <div className="text-youtube-lightgray text-sm mt-1 flex items-center space-x-1">
-              <span>{formatViews(video.views)} views</span>
+              <span data-testid="video-views">{formatViews(video.views)} views</span>
               <span>•</span>
-              <span>{formatDistanceToNow(video.createdAt, { addSuffix: true })}</span>
+              <span data-testid="video-date">{formatDistanceToNow(video.createdAt, { addSuffix: true })}</span>
             </div>
           </div>
 

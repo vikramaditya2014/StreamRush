@@ -30,10 +30,10 @@ console.log('Firebase Config Check:', {
 });
 
 // Initialize Firebase
-let app: any = null;
-let auth: any = null;
-let db: any = null;
-let storage: any = null;
+let app: ReturnType<typeof initializeApp> | null = null;
+let auth: ReturnType<typeof getAuth> | null = null;
+let db: ReturnType<typeof getFirestore> | null = null;
+let storage: ReturnType<typeof getStorage> | null = null;
 
 if (hasFirebaseConfig) {
   try {

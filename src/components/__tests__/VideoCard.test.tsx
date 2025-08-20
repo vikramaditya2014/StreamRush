@@ -61,8 +61,8 @@ describe('VideoCard', () => {
 
   it('links to video watch page', () => {
     renderVideoCard();
-    const videoLink = screen.getByRole('link', { name: /test video/i });
-    expect(videoLink).toHaveAttribute('href', '/watch/1');
+    const videoLinks = screen.getAllByRole('link', { name: /test video/i });
+    expect(videoLinks[0]).toHaveAttribute('href', '/watch/1');
   });
 
   it('links to channel page', () => {

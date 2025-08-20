@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
-import { VideoProvider } from './contexts/VideoContext';
+import { VideoProvider } from './contexts/VideoContextWithCloudinary';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
+import CorsNotification from './components/CorsNotification';
 import Home from './pages/Home';
 import Watch from './pages/Watch';
 import Search from './pages/Search';
@@ -18,13 +19,25 @@ import Subscriptions from './pages/Subscriptions';
 import History from './pages/History';
 import LikedVideos from './pages/LikedVideos';
 import Playlists from './pages/Playlists';
+import Admin from './pages/Admin';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showCorsNotification, setShowCorsNotification] = useState(false);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+
+  // Listen for CORS errors from VideoContext
+  React.useEffect(() => {
+    const handleCorsError = () => {
+      setShowCorsNotification(true);
+    };
+
+    window.addEventListener('corsError', handleCorsError);
+    return () => window.removeEventListener('corsError', handleCorsError);
+  }, []);
 
   return (
     <AuthProvider>
@@ -51,6 +64,7 @@ function App() {
                   <Route path="/history" element={<History />} />
                   <Route path="/liked" element={<LikedVideos />} />
                   <Route path="/playlists" element={<Playlists />} />
+                  <Route path="/admin" element={<Admin />} />
                 </Routes>
               </main>
             </div>
@@ -63,6 +77,10 @@ function App() {
                   border: '1px solid #404040',
                 },
               }}
+            />
+            <CorsNotification 
+              show={showCorsNotification}
+              onClose={() => setShowCorsNotification(false)}
             />
           </div>
         </Router>

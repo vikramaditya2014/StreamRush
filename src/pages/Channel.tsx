@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { Bell, Users, Video as VideoIcon, PlaySquare } from 'lucide-react';
-import { useVideo } from '../contexts/VideoContext';
+import { Bell, Video as VideoIcon, PlaySquare } from 'lucide-react';
+import { useVideo } from '../contexts/VideoContextWithCloudinary';
 import { useAuth } from '../contexts/AuthContext';
 import { Video, User } from '../types';
 import VideoCard from '../components/VideoCard';
@@ -19,20 +19,7 @@ const Channel: React.FC = () => {
   const { getChannelVideos, subscribeToChannel, unsubscribeFromChannel } = useVideo();
   const { currentUser, userProfile } = useAuth();
 
-  useEffect(() => {
-    if (id) {
-      loadChannelData();
-      loadChannelVideos();
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (userProfile && channelData) {
-      setIsSubscribed(userProfile.subscribedTo.includes(channelData.uid));
-    }
-  }, [userProfile, channelData]);
-
-  const loadChannelData = async () => {
+  const loadChannelData = useCallback(async () => {
     if (!id) return;
     
     try {
@@ -43,9 +30,9 @@ const Channel: React.FC = () => {
     } catch (error) {
       console.error('Error loading channel data:', error);
     }
-  };
+  }, [id]);
 
-  const loadChannelVideos = async () => {
+  const loadChannelVideos = useCallback(async () => {
     if (!id) return;
     
     try {
@@ -56,7 +43,20 @@ const Channel: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, getChannelVideos]);
+
+  useEffect(() => {
+    if (id) {
+      loadChannelData();
+      loadChannelVideos();
+    }
+  }, [id, loadChannelData, loadChannelVideos]);
+
+  useEffect(() => {
+    if (userProfile && channelData) {
+      setIsSubscribed(userProfile.subscribedTo.includes(channelData.uid));
+    }
+  }, [userProfile, channelData]);
 
   const handleSubscribe = async () => {
     if (!currentUser || !channelData) return;
