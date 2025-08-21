@@ -1,0 +1,64 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - button:
+    - img
+  - link "StreamRush":
+    - /url: /
+    - img
+    - text: StreamRush
+  - textbox "Search videos..."
+  - button:
+    - img
+  - link "Sign in":
+    - /url: /login
+    - img
+    - text: Sign in
+- complementary:
+  - link "Home":
+    - /url: /
+    - img
+    - text: Home
+  - link "Trending":
+    - /url: /trending
+    - img
+    - text: Trending
+  - heading "Explore" [level=3]
+  - link "Gaming":
+    - /url: /gaming
+    - img
+    - text: Gaming
+  - link "Music":
+    - /url: /music
+    - img
+    - text: Music
+  - link "Sports":
+    - /url: /sports
+    - img
+    - text: Sports
+  - link "News":
+    - /url: /news
+    - img
+    - text: News
+  - heading "More from StreamRush" [level=3]
+  - link "Settings":
+    - /url: /settings
+    - img
+    - text: Settings
+  - link "Report history":
+    - /url: /report
+    - img
+    - text: Report history
+  - link "Help":
+    - /url: /help
+    - img
+    - text: Help
+  - paragraph: About Press Copyright Contact us Creators Advertise Developers
+  - paragraph: Terms Privacy Policy & Safety How StreamRush works Test new features
+  - paragraph: © 2024 StreamRush
+- main:
+  - img
+  - img
+  - paragraph: Loading amazing content...
+```

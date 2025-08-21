@@ -1,0 +1,128 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - button:
+    - img
+  - link "StreamRush":
+    - /url: /
+    - img
+    - text: StreamRush
+  - textbox "Search videos..."
+  - button:
+    - img
+  - link "Sign in":
+    - /url: /login
+    - img
+    - text: Sign in
+- complementary:
+  - link "Home":
+    - /url: /
+    - img
+    - text: Home
+  - link "Trending":
+    - /url: /trending
+    - img
+    - text: Trending
+  - heading "Explore" [level=3]
+  - link "Gaming":
+    - /url: /gaming
+    - img
+    - text: Gaming
+  - link "Music":
+    - /url: /music
+    - img
+    - text: Music
+  - link "Sports":
+    - /url: /sports
+    - img
+    - text: Sports
+  - link "News":
+    - /url: /news
+    - img
+    - text: News
+  - heading "More from StreamRush" [level=3]
+  - link "Settings":
+    - /url: /settings
+    - img
+    - text: Settings
+  - link "Report history":
+    - /url: /report
+    - img
+    - text: Report history
+  - link "Help":
+    - /url: /help
+    - img
+    - text: Help
+  - paragraph: About Press Copyright Contact us Creators Advertise Developers
+  - paragraph: Terms Privacy Policy & Safety How StreamRush works Test new features
+  - paragraph: © 2024 StreamRush
+- main:
+  - heading "🛑 Single Arm Dumbbell Row Mistakes You Should Avoid" [level=1]
+  - text: 61 views•about 21 hours ago
+  - button "1":
+    - img
+    - text: "1"
+  - button "0":
+    - img
+    - text: "0"
+  - button "Share":
+    - img
+    - text: Share
+  - button "Download":
+    - img
+    - text: Download
+  - button:
+    - img
+  - img "Sudanva Shilanavar"
+  - heading "Sudanva Shilanavar" [level=3]
+  - paragraph: 0 subscribers
+  - button "Subscribe":
+    - img
+    - text: Subscribe
+  - button "asadadfasf":
+    - paragraph: asadadfasf
+  - heading "0 Comments" [level=2]
+  - heading "Related Videos" [level=2]
+  - img "🔥 Train Your Back the Right Way with Just Dumbbells"
+  - heading "🔥 Train Your Back the Right Way with Just Dumbbells" [level=3]
+  - paragraph: Top
+  - text: 3.0K views•about 23 hours ago
+  - img "🔥 Train Your Back the Right Way with Just Dumbbells"
+  - heading "🔥 Train Your Back the Right Way with Just Dumbbells" [level=3]
+  - paragraph: Top Karan
+  - text: 3.7K views•about 23 hours ago
+  - 'img "Breaking: Latest Tech News Update"'
+  - 'heading "Breaking: Latest Tech News Update" [level=3]'
+  - paragraph: TechGuru
+  - text: 157.8K views•1 day ago
+  - img "Relaxing Jazz Music for Study & Work"
+  - heading "Relaxing Jazz Music for Study & Work" [level=3]
+  - paragraph: MusicLover
+  - text: 123.5K views•1 day ago
+  - img "Top 10 Travel Destinations 2024"
+  - heading "Top 10 Travel Destinations 2024" [level=3]
+  - paragraph: MusicLover
+  - text: 89.1K views•1 day ago
+  - img "AI and Machine Learning Explained"
+  - heading "AI and Machine Learning Explained" [level=3]
+  - paragraph: TechGuru
+  - text: 67.9K views•1 day ago
+  - img "Epic Gaming Montage - Best Moments 2024"
+  - heading "Epic Gaming Montage - Best Moments 2024" [level=3]
+  - paragraph: ProGamer
+  - text: 45.3K views•1 day ago
+  - img "10-Minute Italian Pasta Recipe"
+  - heading "10-Minute Italian Pasta Recipe" [level=3]
+  - paragraph: ChefMaster
+  - text: 34.8K views•1 day ago
+  - img "Intense Workout - 30 Minutes Full Body"
+  - heading "Intense Workout - 30 Minutes Full Body" [level=3]
+  - paragraph: ProGamer
+  - text: 23.5K views•1 day ago
+  - img "Building a Modern React App with TypeScript"
+  - heading "Building a Modern React App with TypeScript" [level=3]
+  - paragraph: TechGuru
+  - text: 15.7K views•1 day ago
+- status: Error loading video. Please try refreshing the page.
+```

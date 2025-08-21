@@ -38,6 +38,7 @@ interface VideoContextType {
   unsubscribeFromChannel: (channelId: string) => Promise<void>;
   createPlaylist: (name: string, description: string, isPublic: boolean) => Promise<void>;
   addToPlaylist: (playlistId: string, videoId: string) => Promise<void>;
+  removeFromPlaylist: (playlistId: string, videoId: string) => Promise<void>;
   getUserPlaylists: () => Promise<Playlist[]>;
   incrementViews: (videoId: string) => Promise<void>;
 }
@@ -628,6 +629,20 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const removeFromPlaylist = async (playlistId: string, videoId: string) => {
+    try {
+      const playlistRef = doc(db, 'playlists', playlistId);
+      await updateDoc(playlistRef, {
+        videoIds: arrayRemove(videoId),
+        updatedAt: new Date()
+      });
+      toast.success('Removed from playlist!');
+    } catch (error) {
+      console.error('Error removing from playlist:', error);
+      toast.error('Failed to remove from playlist');
+    }
+  };
+
   const getUserPlaylists = async (): Promise<Playlist[]> => {
     if (!currentUser) return [];
 
@@ -684,6 +699,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     unsubscribeFromChannel,
     createPlaylist,
     addToPlaylist,
+    removeFromPlaylist,
     getUserPlaylists,
     incrementViews
   };

@@ -1,0 +1,305 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - button:
+    - img
+  - link "StreamRush":
+    - /url: /
+    - img
+    - text: StreamRush
+  - textbox "Search videos..."
+  - button:
+    - img
+  - link "Sign in":
+    - /url: /login
+    - img
+    - text: Sign in
+- complementary:
+  - link "Home":
+    - /url: /
+    - img
+    - text: Home
+  - link "Trending":
+    - /url: /trending
+    - img
+    - text: Trending
+  - heading "Explore" [level=3]
+  - link "Gaming":
+    - /url: /gaming
+    - img
+    - text: Gaming
+  - link "Music":
+    - /url: /music
+    - img
+    - text: Music
+  - link "Sports":
+    - /url: /sports
+    - img
+    - text: Sports
+  - link "News":
+    - /url: /news
+    - img
+    - text: News
+  - heading "More from StreamRush" [level=3]
+  - link "Settings":
+    - /url: /settings
+    - img
+    - text: Settings
+  - link "Report history":
+    - /url: /report
+    - img
+    - text: Report history
+  - link "Help":
+    - /url: /help
+    - img
+    - text: Help
+  - paragraph: About Press Copyright Contact us Creators Advertise Developers
+  - paragraph: Terms Privacy Policy & Safety How StreamRush works Test new features
+  - paragraph: © 2024 StreamRush
+- main:
+  - img
+  - heading "Welcome to StreamRush" [level=1]
+  - paragraph: Discover amazing content from creators around the world
+  - button "All"
+  - button "Gaming"
+  - button "Music"
+  - button "Sports"
+  - button "News"
+  - button "Entertainment"
+  - button "Education"
+  - button "Technology"
+  - button "Travel"
+  - button "Cooking"
+  - link "🛑 Single Arm Dumbbell Row Mistakes You Should Avoid 0:17 1.5K 1":
+    - /url: /watch/WUGzOop4n6LfWA5ruVUM
+    - img "🛑 Single Arm Dumbbell Row Mistakes You Should Avoid"
+    - img
+    - img
+    - text: 0:17
+    - img
+    - text: 1.5K
+    - img
+    - text: "1"
+  - link "Sudanva Shilanavar":
+    - /url: /channel/GJ6Rs4gDfNV6E3WzxiIaMczqLrb2
+    - img "Sudanva Shilanavar"
+  - link "🛑 Single Arm Dumbbell Row Mistakes You Should Avoid":
+    - /url: /watch/WUGzOop4n6LfWA5ruVUM
+    - heading "🛑 Single Arm Dumbbell Row Mistakes You Should Avoid" [level=3]
+  - link "Sudanva Shilanavar":
+    - /url: /channel/GJ6Rs4gDfNV6E3WzxiIaMczqLrb2
+  - text: 1.5K views • about 22 hours ago
+  - button:
+    - img
+  - link "🔥 Train Your Back the Right Way with Just Dumbbells 0:29 3.0K 2":
+    - /url: /watch/tGYMsgoJPA6WywwZhkbo
+    - img "🔥 Train Your Back the Right Way with Just Dumbbells"
+    - img
+    - img
+    - text: 0:29
+    - img
+    - text: 3.0K
+    - img
+    - text: "2"
+  - link "Top":
+    - /url: /channel/lka8jZW97iXPrfLSR6NuYkVN7gL2
+    - img "Top"
+  - link "🔥 Train Your Back the Right Way with Just Dumbbells":
+    - /url: /watch/tGYMsgoJPA6WywwZhkbo
+    - heading "🔥 Train Your Back the Right Way with Just Dumbbells" [level=3]
+  - link "Top":
+    - /url: /channel/lka8jZW97iXPrfLSR6NuYkVN7gL2
+  - text: 3.0K views • about 23 hours ago
+  - button:
+    - img
+  - link "🔥 Train Your Back the Right Way with Just Dumbbells 0:29 3.7K 0":
+    - /url: /watch/6PrfG96thdFfGLorL0Im
+    - img "🔥 Train Your Back the Right Way with Just Dumbbells"
+    - img
+    - img
+    - text: 0:29
+    - img
+    - text: 3.7K
+    - img
+    - text: "0"
+  - link "Top Karan":
+    - /url: /channel/lka8jZW97iXPrfLSR6NuYkVN7gL2
+    - img "Top Karan"
+  - link "🔥 Train Your Back the Right Way with Just Dumbbells":
+    - /url: /watch/6PrfG96thdFfGLorL0Im
+    - heading "🔥 Train Your Back the Right Way with Just Dumbbells" [level=3]
+  - link "Top Karan":
+    - /url: /channel/lka8jZW97iXPrfLSR6NuYkVN7gL2
+  - text: 3.7K views • about 23 hours ago
+  - button:
+    - img
+  - 'link "Breaking: Latest Tech News Update 12:36 157.8K 8.9K"':
+    - /url: /watch/CEdTkO80lZ3v6JnrPfyT
+    - 'img "Breaking: Latest Tech News Update"'
+    - img
+    - img
+    - text: 12:36
+    - img
+    - text: 157.8K
+    - img
+    - text: 8.9K
+  - link "TechGuru":
+    - /url: /channel/1
+    - img "TechGuru"
+  - 'link "Breaking: Latest Tech News Update"':
+    - /url: /watch/CEdTkO80lZ3v6JnrPfyT
+    - 'heading "Breaking: Latest Tech News Update" [level=3]'
+  - link "TechGuru":
+    - /url: /channel/1
+  - text: 157.8K views • 1 day ago
+  - button:
+    - img
+  - link "Intense Workout - 30 Minutes Full Body 30:00 23.5K 1.9K":
+    - /url: /watch/KBwthigxBP5ldvHc2tbF
+    - img "Intense Workout - 30 Minutes Full Body"
+    - img
+    - img
+    - text: 30:00
+    - img
+    - text: 23.5K
+    - img
+    - text: 1.9K
+  - link "ProGamer":
+    - /url: /channel/3
+    - img "ProGamer"
+  - link "Intense Workout - 30 Minutes Full Body":
+    - /url: /watch/KBwthigxBP5ldvHc2tbF
+    - heading "Intense Workout - 30 Minutes Full Body" [level=3]
+  - link "ProGamer":
+    - /url: /channel/3
+  - text: 23.5K views • 1 day ago
+  - button:
+    - img
+  - link "Top 10 Travel Destinations 2024 19:16 89.1K 4.6K":
+    - /url: /watch/pw2tSk4TwYLS7vZsswwx
+    - img "Top 10 Travel Destinations 2024"
+    - img
+    - img
+    - text: 19:16
+    - img
+    - text: 89.1K
+    - img
+    - text: 4.6K
+  - link "MusicLover":
+    - /url: /channel/2
+    - img "MusicLover"
+  - link "Top 10 Travel Destinations 2024":
+    - /url: /watch/pw2tSk4TwYLS7vZsswwx
+    - heading "Top 10 Travel Destinations 2024" [level=3]
+  - link "MusicLover":
+    - /url: /channel/2
+  - text: 89.1K views • 1 day ago
+  - button:
+    - img
+  - link "AI and Machine Learning Explained 30:34 67.9K 3.5K":
+    - /url: /watch/lXZICDP8vbo1jpKHuYKD
+    - img "AI and Machine Learning Explained"
+    - img
+    - img
+    - text: 30:34
+    - img
+    - text: 67.9K
+    - img
+    - text: 3.5K
+  - link "TechGuru":
+    - /url: /channel/1
+    - img "TechGuru"
+  - link "AI and Machine Learning Explained":
+    - /url: /watch/lXZICDP8vbo1jpKHuYKD
+    - heading "AI and Machine Learning Explained" [level=3]
+  - link "TechGuru":
+    - /url: /channel/1
+  - text: 67.9K views • 1 day ago
+  - button:
+    - img
+  - link "10-Minute Italian Pasta Recipe 10:45 34.8K 1.2K":
+    - /url: /watch/BOJy4ldPiJph90l1Wmqr
+    - img "10-Minute Italian Pasta Recipe"
+    - img
+    - img
+    - text: 10:45
+    - img
+    - text: 34.8K
+    - img
+    - text: 1.2K
+  - link "ChefMaster":
+    - /url: /channel/4
+    - img "ChefMaster"
+  - link "10-Minute Italian Pasta Recipe":
+    - /url: /watch/BOJy4ldPiJph90l1Wmqr
+    - heading "10-Minute Italian Pasta Recipe" [level=3]
+  - link "ChefMaster":
+    - /url: /channel/4
+  - text: 34.8K views • 1 day ago
+  - button:
+    - img
+  - link "Relaxing Jazz Music for Study & Work 1:00:00 123.5K 5.7K":
+    - /url: /watch/9CeWBxSiyHRQs0u3qz42
+    - img "Relaxing Jazz Music for Study & Work"
+    - img
+    - img
+    - text: 1:00:00
+    - img
+    - text: 123.5K
+    - img
+    - text: 5.7K
+  - link "MusicLover":
+    - /url: /channel/2
+    - img "MusicLover"
+  - link "Relaxing Jazz Music for Study & Work":
+    - /url: /watch/9CeWBxSiyHRQs0u3qz42
+    - heading "Relaxing Jazz Music for Study & Work" [level=3]
+  - link "MusicLover":
+    - /url: /channel/2
+  - text: 123.5K views • 1 day ago
+  - button:
+    - img
+  - link "Epic Gaming Montage - Best Moments 2024 14:52 45.3K 2.3K":
+    - /url: /watch/FoIcULOu03dqqk0e4YJO
+    - img "Epic Gaming Montage - Best Moments 2024"
+    - img
+    - img
+    - text: 14:52
+    - img
+    - text: 45.3K
+    - img
+    - text: 2.3K
+  - link "ProGamer":
+    - /url: /channel/3
+    - img "ProGamer"
+  - link "Epic Gaming Montage - Best Moments 2024":
+    - /url: /watch/FoIcULOu03dqqk0e4YJO
+    - heading "Epic Gaming Montage - Best Moments 2024" [level=3]
+  - link "ProGamer":
+    - /url: /channel/3
+  - text: 45.3K views • 1 day ago
+  - button:
+    - img
+  - link "Building a Modern React App with TypeScript 20:45 15.7K 892":
+    - /url: /watch/YY5N1MGn5P6kuiv0GTT0
+    - img "Building a Modern React App with TypeScript"
+    - img
+    - img
+    - text: 20:45
+    - img
+    - text: 15.7K
+    - img
+    - text: "892"
+  - link "TechGuru":
+    - /url: /channel/1
+    - img "TechGuru"
+  - link "Building a Modern React App with TypeScript":
+    - /url: /watch/YY5N1MGn5P6kuiv0GTT0
+    - heading "Building a Modern React App with TypeScript" [level=3]
+  - link "TechGuru":
+    - /url: /channel/1
+  - text: 15.7K views • 1 day ago
+  - button:
+    - img
+```

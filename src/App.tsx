@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
@@ -20,12 +20,32 @@ import Subscriptions from './pages/Subscriptions';
 import History from './pages/History';
 import LikedVideos from './pages/LikedVideos';
 import Playlists from './pages/Playlists';
+import Playlist from './pages/Playlist';
 import Admin from './pages/Admin';
 import Notifications from './pages/Notifications';
 
 function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Default to closed on mobile
   const [showCorsNotification, setShowCorsNotification] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if device is mobile/tablet
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 1024; // lg breakpoint
+      setIsMobile(mobile);
+      // Auto-close sidebar on mobile, auto-open on desktop
+      if (mobile) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -47,11 +67,22 @@ function App() {
         <VideoProvider>
           <Router>
           <div className="min-h-screen bg-youtube-dark text-white">
-            <Header onToggleSidebar={toggleSidebar} />
+            <Header onToggleSidebar={toggleSidebar} isMobile={isMobile} />
             <div className="flex">
-              <Sidebar isOpen={sidebarOpen} />
+              <Sidebar isOpen={sidebarOpen} isMobile={isMobile} />
+              {/* Mobile overlay */}
+              {isMobile && sidebarOpen && (
+                <div 
+                  className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+                  onClick={() => setSidebarOpen(false)}
+                />
+              )}
               <main className={`flex-1 transition-all duration-300 ease-in-out ${
-                sidebarOpen ? 'ml-64' : 'ml-16'
+                isMobile 
+                  ? 'ml-0' // No margin on mobile
+                  : sidebarOpen 
+                    ? 'ml-64' 
+                    : 'ml-16'
               }`}>
                 <Routes>
                   <Route path="/" element={<Home />} />
@@ -67,6 +98,7 @@ function App() {
                   <Route path="/history" element={<History />} />
                   <Route path="/liked" element={<LikedVideos />} />
                   <Route path="/playlists" element={<Playlists />} />
+                  <Route path="/playlist/:id" element={<Playlist />} />
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="/admin" element={<Admin />} />
                 </Routes>

@@ -39,26 +39,26 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div className="pt-16 px-6 min-h-screen">
+    <div className="pt-16 px-3 sm:px-6 min-h-screen">
       {/* Welcome Banner */}
-      <div className="mb-8 bg-gradient-to-r from-red-600/20 to-purple-600/20 rounded-2xl p-6 border border-red-500/20">
+      <div className="mb-6 sm:mb-8 bg-gradient-to-r from-red-600/20 to-purple-600/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-red-500/20">
         <div className="flex items-center space-x-3">
-          <Sparkles className="text-red-500 animate-pulse" size={24} />
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+          <Sparkles className="text-red-500 animate-pulse" size={20} />
+          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
             Welcome to StreamRush
           </h1>
         </div>
-        <p className="text-youtube-lightgray mt-2">Discover amazing content from creators around the world</p>
+        <p className="text-youtube-lightgray mt-2 text-sm sm:text-base">Discover amazing content from creators around the world</p>
       </div>
 
       {/* Category Filter */}
-      <div className="sticky top-16 bg-youtube-dark/95 backdrop-blur-sm py-4 mb-8 border-b border-youtube-gray z-10">
-        <div className="flex space-x-3 overflow-x-auto scrollbar-hide pb-2">
+      <div className="sticky top-16 bg-youtube-dark/95 backdrop-blur-sm py-3 sm:py-4 mb-6 sm:mb-8 border-b border-youtube-gray z-10 -mx-3 sm:-mx-6 px-3 sm:px-6">
+        <div className="flex space-x-2 sm:space-x-3 overflow-x-auto scrollbar-hide pb-2">
           {categories.map((category, index) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-6 py-2.5 rounded-full whitespace-nowrap transition-all duration-300 font-medium transform hover:scale-105 ${
+              className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full whitespace-nowrap transition-all duration-300 font-medium transform hover:scale-105 text-sm sm:text-base ${
                 selectedCategory === category
                   ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25'
                   : 'bg-youtube-gray text-white hover:bg-gray-600 hover:shadow-md'
@@ -74,7 +74,7 @@ const Home: React.FC = () => {
       </div>
 
       {/* Videos Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
         {filteredVideos.map((video, index) => (
           <div
             key={video.id}

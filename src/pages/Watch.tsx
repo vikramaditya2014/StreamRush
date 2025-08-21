@@ -2,12 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactPlayer from 'react-player';
 import { formatDistanceToNow } from 'date-fns';
-import { ThumbsUp, ThumbsDown, Share, Download, MoreHorizontal, Bell } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Share, Download, MoreHorizontal, Bell, Bookmark } from 'lucide-react';
 import { useVideo } from '../contexts/VideoContextWithCloudinary';
 import { useAuth } from '../contexts/AuthContext';
 import { Video, Comment } from '../types';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import AddToPlaylistModal from '../components/AddToPlaylistModal';
 
 import toast from 'react-hot-toast';
 
@@ -22,6 +23,7 @@ const Watch: React.FC = () => {
   const [userLikedVideo, setUserLikedVideo] = useState(false);
   const [userDislikedVideo, setUserDislikedVideo] = useState(false);
   const [channelData, setChannelData] = useState<any>(null);
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   
   const { 
     getVideo, 
@@ -323,12 +325,12 @@ const Watch: React.FC = () => {
   }
 
   return (
-    <div className="pt-16 px-6">
-      <div className="flex flex-col lg:flex-row gap-6">
+    <div className="pt-16 px-3 sm:px-6">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
         {/* Main Video Section */}
         <div className="flex-1">
           {/* Video Player */}
-          <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4">
+          <div className="aspect-video bg-black rounded-lg overflow-hidden mb-3 sm:mb-4">
             <ReactPlayer
               url={video.videoUrl}
               width="100%"
@@ -360,38 +362,38 @@ const Watch: React.FC = () => {
           </div>
 
           {/* Video Info */}
-          <div className="mb-6">
-            <h1 className="text-xl font-bold mb-2">{video.title}</h1>
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-lg sm:text-xl font-bold mb-2 leading-tight">{video.title}</h1>
             
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-youtube-lightgray">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-3 sm:space-y-0">
+              <div className="text-youtube-lightgray text-sm sm:text-base">
                 <span>{formatViews(video.views)}</span>
                 <span className="mx-2">•</span>
                 <span>{formatDistanceToNow(video.createdAt, { addSuffix: true })}</span>
               </div>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto pb-2 sm:pb-0">
                 <button
                   onClick={handleLike}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${
+                  className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-full transition-colors text-sm sm:text-base whitespace-nowrap ${
                     userLikedVideo 
                       ? 'bg-blue-600 hover:bg-blue-700 text-white' 
                       : 'bg-youtube-gray hover:bg-gray-600'
                   }`}
                 >
-                  <ThumbsUp size={20} className={userLikedVideo ? 'fill-current' : ''} />
+                  <ThumbsUp size={16} className={`sm:w-5 sm:h-5 ${userLikedVideo ? 'fill-current' : ''}`} />
                   <span>{formatNumber(video.likes)}</span>
                 </button>
                 
                 <button
                   onClick={handleDislike}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors ${
+                  className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-full transition-colors text-sm sm:text-base whitespace-nowrap ${
                     userDislikedVideo 
                       ? 'bg-red-600 hover:bg-red-700 text-white' 
                       : 'bg-youtube-gray hover:bg-gray-600'
                   }`}
                 >
-                  <ThumbsDown size={20} className={userDislikedVideo ? 'fill-current' : ''} />
+                  <ThumbsDown size={16} className={`sm:w-5 sm:h-5 ${userDislikedVideo ? 'fill-current' : ''}`} />
                   <span>{formatNumber(video.dislikes)}</span>
                 </button>
                 
@@ -401,6 +403,14 @@ const Watch: React.FC = () => {
                 >
                   <Share size={20} />
                   <span>Share</span>
+                </button>
+                
+                <button 
+                  onClick={() => setShowPlaylistModal(true)}
+                  className="flex items-center space-x-2 bg-youtube-gray hover:bg-gray-600 px-4 py-2 rounded-full transition-colors"
+                >
+                  <Bookmark size={20} />
+                  <span>Save</span>
                 </button>
                 
                 <button 
@@ -615,6 +625,14 @@ const Watch: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Add to Playlist Modal */}
+      {showPlaylistModal && id && (
+        <AddToPlaylistModal 
+          videoId={id}
+          onClose={() => setShowPlaylistModal(false)}
+        />
+      )}
     </div>
   );
 };

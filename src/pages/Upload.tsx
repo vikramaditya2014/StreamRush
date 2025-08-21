@@ -155,10 +155,10 @@ const Upload: React.FC = () => {
   const isDemoMode = !currentUser;
 
   return (
-    <div className="pt-16 px-6 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Upload video</h1>
-        <p className="text-youtube-lightgray">
+    <div className="pt-16 px-3 sm:px-6 max-w-4xl mx-auto">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Upload video</h1>
+        <p className="text-youtube-lightgray text-sm sm:text-base">
           Share your video with the world
           {isDemoMode && <span className="ml-2 px-2 py-1 bg-red-600/20 text-red-400 text-xs rounded-full">Demo Mode</span>}
         </p>
@@ -167,18 +167,18 @@ const Upload: React.FC = () => {
       <CloudinaryStatus />
       <CloudinaryTest />
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
         {/* Video Upload */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Video file</h2>
+          <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Video file</h2>
           {!videoFile ? (
             <div
               onClick={() => videoInputRef.current?.click()}
-              className="border-2 border-dashed border-youtube-gray rounded-lg p-12 text-center cursor-pointer hover:border-youtube-red transition-colors"
+              className="border-2 border-dashed border-youtube-gray rounded-lg p-8 sm:p-12 text-center cursor-pointer hover:border-youtube-red transition-colors"
             >
-              <UploadIcon size={48} className="mx-auto mb-4 text-youtube-lightgray" />
-              <p className="text-lg mb-2">Select video to upload</p>
-              <p className="text-youtube-lightgray text-sm">
+              <UploadIcon size={40} className="sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-youtube-lightgray" />
+              <p className="text-base sm:text-lg mb-2">Select video to upload</p>
+              <p className="text-youtube-lightgray text-xs sm:text-sm">
                 Or drag and drop a video file (Max: 100MB)
               </p>
               <input

@@ -20,9 +20,10 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface SidebarProps {
   isOpen: boolean;
+  isMobile?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, isMobile = false }) => {
   const location = useLocation();
   const { currentUser } = useAuth();
 
@@ -47,14 +48,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         <div className={`${isActive(to) ? 'text-red-500' : ''} group-hover:scale-110 transition-transform duration-200`}>
           {icon}
         </div>
-        {isOpen && <span className="text-sm font-medium">{label}</span>}
+        {(isOpen || isMobile) && <span className="text-sm font-medium">{label}</span>}
       </Link>
     );
   };
 
   return (
     <aside className={`fixed left-0 top-16 h-full bg-youtube-dark border-r border-youtube-gray overflow-y-auto transition-all duration-300 ease-in-out z-40 ${
-      isOpen ? 'w-64' : 'w-16'
+      isMobile 
+        ? isOpen 
+          ? 'w-64 translate-x-0' 
+          : 'w-64 -translate-x-full'
+        : isOpen 
+          ? 'w-64' 
+          : 'w-16'
     }`}>
       <div className="p-3">
         {/* Main Navigation */}
@@ -70,7 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         </div>
 
         {/* Library */}
-        {currentUser && isOpen && (
+        {currentUser && (isOpen || isMobile) && (
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-youtube-lightgray mb-3 px-3">
               Library
@@ -85,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         )}
 
         {/* Subscriptions */}
-        {currentUser && isOpen && (
+        {currentUser && (isOpen || isMobile) && (
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-youtube-lightgray mb-3 px-3">
               Subscriptions
@@ -99,70 +106,70 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
         {/* Explore */}
         <div className="mb-6">
-          {isOpen && (
+          {(isOpen || isMobile) && (
             <h3 className="text-sm font-semibold text-youtube-lightgray mb-3 px-3">
               Explore
             </h3>
           )}
           <div className="space-y-1">
-            <Link to="/gaming" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!isOpen ? 'Gaming' : ''}>
+            <Link to="/gaming" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!(isOpen || isMobile) ? 'Gaming' : ''}>
               <div className="group-hover:scale-110 transition-transform duration-200">
                 <Gamepad2 size={20} />
               </div>
-              {isOpen && <span className="text-sm font-medium">Gaming</span>}
+              {(isOpen || isMobile) && <span className="text-sm font-medium">Gaming</span>}
             </Link>
-            <Link to="/music" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!isOpen ? 'Music' : ''}>
+            <Link to="/music" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!(isOpen || isMobile) ? 'Music' : ''}>
               <div className="group-hover:scale-110 transition-transform duration-200">
                 <Music size={20} />
               </div>
-              {isOpen && <span className="text-sm font-medium">Music</span>}
+              {(isOpen || isMobile) && <span className="text-sm font-medium">Music</span>}
             </Link>
-            <Link to="/sports" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!isOpen ? 'Sports' : ''}>
+            <Link to="/sports" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!(isOpen || isMobile) ? 'Sports' : ''}>
               <div className="group-hover:scale-110 transition-transform duration-200">
                 <Trophy size={20} />
               </div>
-              {isOpen && <span className="text-sm font-medium">Sports</span>}
+              {(isOpen || isMobile) && <span className="text-sm font-medium">Sports</span>}
             </Link>
-            <Link to="/news" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!isOpen ? 'News' : ''}>
+            <Link to="/news" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!(isOpen || isMobile) ? 'News' : ''}>
               <div className="group-hover:scale-110 transition-transform duration-200">
                 <Newspaper size={20} />
               </div>
-              {isOpen && <span className="text-sm font-medium">News</span>}
+              {(isOpen || isMobile) && <span className="text-sm font-medium">News</span>}
             </Link>
           </div>
         </div>
 
         {/* More from StreamRush */}
         <div className="mb-6">
-          {isOpen && (
+          {(isOpen || isMobile) && (
             <h3 className="text-sm font-semibold text-youtube-lightgray mb-3 px-3">
               More from StreamRush
             </h3>
           )}
           <div className="space-y-1">
-            <Link to="/settings" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!isOpen ? 'Settings' : ''}>
+            <Link to="/settings" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!(isOpen || isMobile) ? 'Settings' : ''}>
               <div className="group-hover:scale-110 transition-transform duration-200">
                 <Settings size={20} />
               </div>
-              {isOpen && <span className="text-sm font-medium">Settings</span>}
+              {(isOpen || isMobile) && <span className="text-sm font-medium">Settings</span>}
             </Link>
-            <Link to="/report" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!isOpen ? 'Report history' : ''}>
+            <Link to="/report" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!(isOpen || isMobile) ? 'Report history' : ''}>
               <div className="group-hover:scale-110 transition-transform duration-200">
                 <Flag size={20} />
               </div>
-              {isOpen && <span className="text-sm font-medium">Report history</span>}
+              {(isOpen || isMobile) && <span className="text-sm font-medium">Report history</span>}
             </Link>
-            <Link to="/help" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!isOpen ? 'Help' : ''}>
+            <Link to="/help" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-youtube-gray transition-all duration-200 cursor-pointer group" title={!(isOpen || isMobile) ? 'Help' : ''}>
               <div className="group-hover:scale-110 transition-transform duration-200">
                 <HelpCircle size={20} />
               </div>
-              {isOpen && <span className="text-sm font-medium">Help</span>}
+              {(isOpen || isMobile) && <span className="text-sm font-medium">Help</span>}
             </Link>
           </div>
         </div>
 
         {/* Footer */}
-        {isOpen && (
+        {(isOpen || isMobile) && (
           <div className="px-3 py-4 text-xs text-youtube-lightgray border-t border-youtube-gray">
             <p className="mb-2">
               About Press Copyright Contact us Creators Advertise Developers

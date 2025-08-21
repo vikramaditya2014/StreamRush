@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { PlaySquare, Plus, Lock, Globe } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useVideo } from '../contexts/VideoContextWithCloudinary';

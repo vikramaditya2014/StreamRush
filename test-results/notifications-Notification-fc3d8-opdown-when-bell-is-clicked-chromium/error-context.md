@@ -57,14 +57,14 @@
   - button "Technology"
   - button "Travel"
   - button "Cooking"
-  - link "🛑 Single Arm Dumbbell Row Mistakes You Should Avoid 0:17 210 1":
+  - link "🛑 Single Arm Dumbbell Row Mistakes You Should Avoid 0:17 1.8K 1":
     - /url: /watch/WUGzOop4n6LfWA5ruVUM
     - img "🛑 Single Arm Dumbbell Row Mistakes You Should Avoid"
     - img
     - img
     - text: 0:17
     - img
-    - text: "210"
+    - text: 1.8K
     - img
     - text: "1"
   - link "Sudanva Shilanavar":
@@ -75,7 +75,7 @@
     - heading "🛑 Single Arm Dumbbell Row Mistakes You Should Avoid" [level=3]
   - link "Sudanva Shilanavar":
     - /url: /channel/GJ6Rs4gDfNV6E3WzxiIaMczqLrb2
-  - text: 210 views • 12 minutes ago
+  - text: 1.8K views • about 22 hours ago
   - button:
     - img
   - link "🔥 Train Your Back the Right Way with Just Dumbbells 0:29 3.0K 2":
@@ -96,7 +96,7 @@
     - heading "🔥 Train Your Back the Right Way with Just Dumbbells" [level=3]
   - link "Top":
     - /url: /channel/lka8jZW97iXPrfLSR6NuYkVN7gL2
-  - text: 3.0K views • about 1 hour ago
+  - text: 3.0K views • about 23 hours ago
   - button:
     - img
   - link "🔥 Train Your Back the Right Way with Just Dumbbells 0:29 3.7K 0":
@@ -117,7 +117,7 @@
     - heading "🔥 Train Your Back the Right Way with Just Dumbbells" [level=3]
   - link "Top Karan":
     - /url: /channel/lka8jZW97iXPrfLSR6NuYkVN7gL2
-  - text: 3.7K views • about 1 hour ago
+  - text: 3.7K views • about 23 hours ago
   - button:
     - img
   - 'link "Breaking: Latest Tech News Update 12:36 157.8K 8.9K"':
@@ -138,7 +138,7 @@
     - 'heading "Breaking: Latest Tech News Update" [level=3]'
   - link "TechGuru":
     - /url: /channel/1
-  - text: 157.8K views • about 4 hours ago
+  - text: 157.8K views • 1 day ago
   - button:
     - img
   - link "Intense Workout - 30 Minutes Full Body 30:00 23.5K 1.9K":
@@ -159,7 +159,7 @@
     - heading "Intense Workout - 30 Minutes Full Body" [level=3]
   - link "ProGamer":
     - /url: /channel/3
-  - text: 23.5K views • about 4 hours ago
+  - text: 23.5K views • 1 day ago
   - button:
     - img
   - link "Top 10 Travel Destinations 2024 19:16 89.1K 4.6K":
@@ -180,7 +180,7 @@
     - heading "Top 10 Travel Destinations 2024" [level=3]
   - link "MusicLover":
     - /url: /channel/2
-  - text: 89.1K views • about 4 hours ago
+  - text: 89.1K views • 1 day ago
   - button:
     - img
   - link "AI and Machine Learning Explained 30:34 67.9K 3.5K":
@@ -201,7 +201,7 @@
     - heading "AI and Machine Learning Explained" [level=3]
   - link "TechGuru":
     - /url: /channel/1
-  - text: 67.9K views • about 4 hours ago
+  - text: 67.9K views • 1 day ago
   - button:
     - img
   - link "10-Minute Italian Pasta Recipe 10:45 34.8K 1.2K":
@@ -222,7 +222,7 @@
     - heading "10-Minute Italian Pasta Recipe" [level=3]
   - link "ChefMaster":
     - /url: /channel/4
-  - text: 34.8K views • about 4 hours ago
+  - text: 34.8K views • 1 day ago
   - button:
     - img
   - link "Relaxing Jazz Music for Study & Work 1:00:00 123.5K 5.7K":
@@ -243,7 +243,7 @@
     - heading "Relaxing Jazz Music for Study & Work" [level=3]
   - link "MusicLover":
     - /url: /channel/2
-  - text: 123.5K views • about 4 hours ago
+  - text: 123.5K views • 1 day ago
   - button:
     - img
   - link "Epic Gaming Montage - Best Moments 2024 14:52 45.3K 2.3K":
@@ -264,7 +264,7 @@
     - heading "Epic Gaming Montage - Best Moments 2024" [level=3]
   - link "ProGamer":
     - /url: /channel/3
-  - text: 45.3K views • about 4 hours ago
+  - text: 45.3K views • 1 day ago
   - button:
     - img
   - link "Building a Modern React App with TypeScript 20:45 15.7K 892":
@@ -285,7 +285,7 @@
     - heading "Building a Modern React App with TypeScript" [level=3]
   - link "TechGuru":
     - /url: /channel/1
-  - text: 15.7K views • about 4 hours ago
+  - text: 15.7K views • 1 day ago
   - button:
     - img
 ```

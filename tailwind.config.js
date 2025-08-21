@@ -13,6 +13,14 @@ module.exports = {
           gray: '#272727',
           lightgray: '#AAAAAA'
         }
+      },
+      screens: {
+        'xs': '475px',
+        '3xl': '1600px',
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
       }
     },
   },

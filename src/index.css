@@ -9,10 +9,25 @@
   body {
     @apply bg-youtube-dark text-white;
     font-family: 'Inter', 'Roboto', sans-serif;
+    /* Prevent horizontal scroll on mobile */
+    overflow-x: hidden;
   }
   
   html {
     scroll-behavior: smooth;
+    /* Prevent horizontal scroll */
+    overflow-x: hidden;
+  }
+  
+  /* Touch-friendly interactions */
+  @media (hover: none) and (pointer: coarse) {
+    .hover\:scale-105:hover {
+      transform: none;
+    }
+    
+    .group:hover .group-hover\:scale-110 {
+      transform: none;
+    }
   }
 }
 
@@ -36,6 +51,18 @@
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  
+  /* Mobile-friendly touch scrolling */
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Better mobile tap targets */
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
   }
   
   .line-clamp-2 {
